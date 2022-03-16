@@ -3,13 +3,14 @@ package com.example.visionapp
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.ImageButton
+import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var cameraM: CameraManager
 
+    private var isFlashOn = false
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -52,8 +56,32 @@ class MainActivity : AppCompatActivity() {
         }
         // TODO: on click button flashlight
         binding.imgBtnFlash.setOnClickListener{
+            flashlightOnClick(it)
             Log.i(TAG, "helo flash")
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun flashlightOnClick(v: View?) {
+        if (!isFlashOn) {
+            val cameraListId = cameraM.cameraIdList[0]
+            cameraM.setTorchMode(cameraListId,true)
+            // flashlight turned on
+            isFlashOn = true
+            // pop up message
+            textMessage("Flash Light is On", this)
+        } else {
+            val cameraListId = cameraM.cameraIdList[0]
+            cameraM.setTorchMode(cameraListId,false)
+            // flashlight turned off
+            isFlashOn = false
+            // pop up message
+            textMessage("Flash Light is Off", this)
+        }
+    }
+
+    private fun textMessage(s: String, c: Context) {
+        Toast.makeText(c, s, Toast.LENGTH_SHORT).show()
     }
 
     private fun startCamera(){
@@ -95,10 +123,7 @@ class MainActivity : AppCompatActivity() {
             if(allPermissionGranted()){
                 startCamera()
             }else{
-                Toast.makeText(
-                    this,
-                    "permission not granted by the user",
-                    Toast.LENGTH_SHORT).show()
+                textMessage("permission not granted by the user", this)
 
                 finish()
             }
