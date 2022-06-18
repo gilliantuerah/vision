@@ -18,7 +18,7 @@ import androidx.core.content.ContextCompat
 import com.example.visionapp.databinding.ActivityMainBinding
 import java.lang.Exception
 
-// TODO: delete later
+// TODO: delete later, only for debugging
 private const val TAG = "MyActivity"
 
 class MainActivity : AppCompatActivity() {

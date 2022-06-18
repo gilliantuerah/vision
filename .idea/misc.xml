@@ -3,9 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_flashlight.xml" value="0.165" />
+        <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/shape.xml" value="0.165" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/layout/activity_main.xml" value="0.22" />
+        <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/layout/activity_main2.xml" value="0.1" />
+        <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/layout/activity_splash_screen.xml" value="0.184375" />
       </map>
     </option>
   </component>
