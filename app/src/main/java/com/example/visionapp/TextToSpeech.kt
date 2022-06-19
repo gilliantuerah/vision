@@ -21,18 +21,20 @@ class TextToSpeech : AppCompatActivity() {
         var btnSpeak = findViewById<Button>(R.id.btnSpeak)
         var etText = findViewById<EditText>(R.id.etText)
 
-        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
-            if (it == TextToSpeech.SUCCESS) {
-                Log.d("tts","masuk pak ekok")
-                tts.language = Locale.US
-            } else {
-                Log.d("tts", "hahahaa")
-                Log.d("tts", TextToSpeech.ERROR.toString())
-            }
-        })
+
 
         btnSpeak.setOnClickListener {
-            tts.speak(etText.text.toString(), TextToSpeech.QUEUE_FLUSH, null)
+            tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
+                if (it==TextToSpeech.SUCCESS) {
+                    Log.d("tts","masuk pak ekok")
+                    tts.language = Locale.US
+                    tts.setSpeechRate(1.0f)
+                    tts.speak(etText.text.toString(), TextToSpeech.QUEUE_ADD, null)
+                } else {
+                    Log.d("tts", "hahahaa")
+                    Log.d("tts", TextToSpeech.ERROR.toString())
+                }
+            })
         }
     }
 
