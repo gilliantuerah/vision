@@ -4,17 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/blue"
     tools:context=".SplashScreen">
 
     <!--  TODO: change src file logo  -->
     <ImageView
-        android:id="@+id/iv_logo"
+        android:id="@+id/ivLogo"
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:src="@drawable/ic_vision_logo_dummy"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
