@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
 import android.os.Build
@@ -14,29 +15,38 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
+import androidx.camera.core.*
+import androidx.camera.core.ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
 import com.example.visionapp.databinding.ActivityMainBinding
 import java.lang.Exception
 import java.util.*
+import com.example.visionapp.ObjectDetectorHelper
+import org.tensorflow.lite.task.vision.detector.Detection
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 // TODO: delete later
 private const val TAG = "MyActivity"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var tts : TextToSpeech
 
     private lateinit var cameraM: CameraManager
-
+    private lateinit var cameraExecutor: ExecutorService
     private lateinit var cameraId: String
-
     private var isFlashOn = false
+
+    private var preview: Preview? = null
+    private var imageAnalyzer: ImageAnalysis? = null
+    private lateinit var bitmapBuffer: Bitmap
+    private lateinit var objectDetectorHelper: ObjectDetectorHelper
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,10 +54,18 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // init camera executor
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        // init object detector helper
+        objectDetectorHelper = ObjectDetectorHelper(
+            context = applicationContext,
+            objectDetectorListener = this)
+
+        // init tts
         // welcome speech
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
             if (it== TextToSpeech.SUCCESS) {
-                Log.d("tts","masuk pak ekok")
                 tts.language = Locale.ENGLISH
                 tts.setSpeechRate(1.0f)
                 tts.speak(Constants.SPLASH_MODE_1, TextToSpeech.QUEUE_ADD, null)
@@ -57,6 +75,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        // init camera
         cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
         checkCameraAccess()
@@ -151,9 +170,11 @@ class MainActivity : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider
             .getInstance(this)
 
+        Log.d(TAG,"heloo masuk siniuu")
+
         cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder()
+            val cameraProvider = cameraProviderFuture.get()
+            preview = Preview.Builder()
                 .build()
                 .also { mPreview ->
                     mPreview.setSurfaceProvider(
@@ -161,20 +182,61 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
 
+            // use back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            Log.d(TAG,"heloo masuk sini")
+
+            // ImageAnalysis. Using RGBA 8888 to match how our models work
+            imageAnalyzer =
+                ImageAnalysis.Builder()
+                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                    .setTargetRotation(binding.viewFinder.display.rotation)
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .setOutputImageFormat(OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                    .build()
+                    // The analyzer can then be assigned to the instance
+                    .also {
+                        it.setAnalyzer(cameraExecutor) { image ->
+                            if (!::bitmapBuffer.isInitialized) {
+                                // The image rotation and RGB image buffer are initialized only once
+                                // the analyzer has started running
+                                bitmapBuffer = Bitmap.createBitmap(
+                                    image.width,
+                                    image.height,
+                                    Bitmap.Config.ARGB_8888
+                                )
+                            }
+                            Log.d(TAG,"heloo masuk")
+                            detectObjects(image)
+                        }
+                    }
 
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
                     this,
                     cameraSelector,
-                    preview
+                    preview,
+                    imageAnalyzer
                 )
 
             }catch (e: Exception){
                 Log.d(Constants.TAG, "startCamera Fail:", e)
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun detectObjects(image: ImageProxy) {
+        // Copy out RGB bits to the shared bitmap buffer
+        image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
+
+        Log.d(TAG, "masuk detect object")
+        Log.d(TAG, image.toString())
+
+        val imageRotation = image.imageInfo.rotationDegrees
+        // Pass Bitmap and rotation to the object detector helper for processing and detection
+        objectDetectorHelper.detect(bitmapBuffer, imageRotation)
     }
 
     override fun onRequestPermissionsResult(
@@ -200,4 +262,31 @@ class MainActivity : AppCompatActivity() {
                 baseContext, it
             ) == PackageManager.PERMISSION_GRANTED
         }
+
+    override fun onError(error: String) {
+        // TODO: Not yet implemented
+        Log.d(TAG, "helo masuk error")
+    }
+
+    override fun onResults(
+        results: MutableList<Detection>?,
+        inferenceTime: Long,
+        imageHeight: Int,
+        imageWidth: Int
+    ) {
+
+        Log.d(TAG, results.toString())
+
+        // Pass necessary information to OverlayView for drawing on the canvas
+        binding.overlay.setResults(
+            results ?: LinkedList<Detection>(),
+            imageHeight,
+            imageWidth
+        )
+
+        // Force a redraw
+        binding.overlay.invalidate()
+
+    }
+
 }
