@@ -9,6 +9,7 @@ import android.hardware.camera2.CameraManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -21,12 +22,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
 import com.example.visionapp.databinding.ActivityMainBinding
 import java.lang.Exception
+import java.util.*
 
 // TODO: delete later
 private const val TAG = "MyActivity"
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var tts : TextToSpeech
 
     private lateinit var cameraM: CameraManager
 
@@ -39,6 +43,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // welcome speech
+        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
+            if (it== TextToSpeech.SUCCESS) {
+                Log.d("tts","masuk pak ekok")
+                tts.language = Locale.ENGLISH
+                tts.setSpeechRate(1.0f)
+                tts.speak(Constants.SPLASH_MODE_1, TextToSpeech.QUEUE_ADD, null)
+            } else {
+                Log.d("tts", "hahahaa")
+                Log.d("tts", TextToSpeech.ERROR.toString())
+            }
+        })
 
         cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
 

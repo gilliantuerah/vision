@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.VisionApp" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.VisionApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/blue</item>
         <item name="colorPrimaryVariant">@color/blue</item>
@@ -27,12 +27,6 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
-    </style>
-    
-    <!--  switch style  -->
-    <style name="SwitchBlackWhite">
-        <item name="android:colorControlActivated">@color/black</item>
-
     </style>
         
 </resources>
