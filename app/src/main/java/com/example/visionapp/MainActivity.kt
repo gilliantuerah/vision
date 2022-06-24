@@ -3,30 +3,25 @@ package com.example.visionapp
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.core.ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
-import androidx.core.widget.ImageViewCompat
 import com.example.visionapp.databinding.ActivityMainBinding
-import java.lang.Exception
-import java.util.*
-import com.example.visionapp.ObjectDetectorHelper
 import org.tensorflow.lite.task.vision.detector.Detection
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -42,6 +37,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var cameraId: String
     private var isFlashOn = false
+    private var modelInUse = 1
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
@@ -62,18 +58,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             context = applicationContext,
             objectDetectorListener = this)
 
-        // init tts
         // welcome speech
-        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
-            if (it== TextToSpeech.SUCCESS) {
-                tts.language = Locale.ENGLISH
-                tts.setSpeechRate(1.0f)
-                tts.speak(Constants.SPLASH_MODE_1, TextToSpeech.QUEUE_ADD, null)
-            } else {
-                Log.d("tts", "hahahaa")
-                Log.d("tts", TextToSpeech.ERROR.toString())
-            }
-        })
+        textToSpeechBahasa(Constants.HELP_MODE_1_FLASH_OFF)
 
         // init camera
         cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
@@ -82,15 +68,43 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         // TODO: on click button help
         binding.imgBtnHelp.setOnClickListener{
-            Log.i(TAG, "helo aku help")
-            // TODO: tts help script
+            if(isFlashOn) {
+                if(modelInUse == 1){
+                    textToSpeechBahasa(Constants.HELP_MODE_1_FLASH_ON)
+                } else {
+                    // model 2
+                    textToSpeechBahasa(Constants.HELP_MODE_2_FLASH_ON)
+                }
+            } else {
+                if(modelInUse == 1){
+                    textToSpeechBahasa(Constants.HELP_MODE_1_FLASH_OFF)
+                } else {
+                    // model 2
+                    textToSpeechBahasa(Constants.HELP_MODE_2_FLASH_OFF)
+                }
+            }
         }
         // TODO: on click button flashlight
         binding.imgBtnFlash.setOnClickListener{
             flashlightOnClick(it)
-            Log.i(TAG, "helo flash")
+            Log.d(TAG, "helo flash")
         }
         // TODO: handle switch button
+        binding.switchModel.setOnCheckedChangeListener{ _, isChecked ->
+            if (isChecked) {
+                // mode 2
+                modelInUse = 2
+                // text to speech
+                textToSpeechBahasa(Constants.SWITCH_TO_MODE_2)
+
+            } else {
+                // mode 1
+                modelInUse = 1
+                // text to speech
+                textToSpeechBahasa(Constants.SWITCH_TO_MODE_1)
+
+            }
+        }
     }
 
     @SuppressLint("ResourceAsColor")
@@ -104,7 +118,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         } else {
             Log.d(TAG, "flash masuk")
             try {
-                val cameraIdList = cameraM.getCameraIdList()
+                val cameraIdList = cameraM.cameraIdList
 
                 Log.d(TAG, cameraIdList.toString())
 
@@ -117,41 +131,43 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             }
 
             if (!isFlashOn) {
-                cameraM.setTorchMode(cameraId, true)
+                //cameraM.setTorchMode(cameraId, true)
 
                 // flashlight turned on
                 isFlashOn = true
 
                 // change icon color
-                // TODO: align color with design
-                ImageViewCompat.setImageTintList(
-                    binding.imgBtnFlash,
-                    ColorStateList.valueOf(R.color.blue)
-                )
+                binding.imgBtnFlash.setBackgroundResource(R.drawable.ic_flash_on)
 
-                // pop up message
-                // textMessage("Flash Light is On", this)
+                // text to speech
+                textToSpeechBahasa(Constants.FLASH_ON)
             } else {
-                cameraM.setTorchMode(cameraId, false)
+                //cameraM.setTorchMode(cameraId, false)
 
                 // flashlight turned off
                 isFlashOn = false
 
                 // change icon color
-                // TODO: align color with design
-                ImageViewCompat.setImageTintList(
-                    binding.imgBtnFlash,
-                    ColorStateList.valueOf(R.color.black)
-                )
+                binding.imgBtnFlash.setBackgroundResource(R.drawable.ic_flash_off)
 
-                // pop up message
-                // textMessage("Flash Light is Off", this)
+                // text to speech
+                textToSpeechBahasa(Constants.FLASH_OFF)
             }
         }
     }
 
     private fun textMessage(s: String, c: Context) {
         Toast.makeText(c, s, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun textToSpeechBahasa(s: String) {
+        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
+            if (it == TextToSpeech.SUCCESS) {
+                tts.language = Locale("id", "ID")
+                tts.setSpeechRate(1.0f)
+                tts.speak(s, TextToSpeech.QUEUE_ADD, null)
+            }
+        })
     }
 
     private fun checkCameraAccess() {
