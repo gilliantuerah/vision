@@ -53,13 +53,21 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // init camera executor
         cameraExecutor = Executors.newSingleThreadExecutor()
 
+        // init tts bahasa
+        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
+            if (it == TextToSpeech.SUCCESS) {
+                tts.language = Locale("id", "ID")
+                tts.setSpeechRate(1.0f)
+
+                // welcome speech
+                tts.speak(Constants.HELP_MODE_1_FLASH_OFF, TextToSpeech.QUEUE_FLUSH, null)
+            }
+        })
+
         // init object detector helper
         objectDetectorHelper = ObjectDetectorHelper(
             context = applicationContext,
             objectDetectorListener = this)
-
-        // welcome speech
-        textToSpeechBahasa(Constants.HELP_MODE_1_FLASH_OFF)
 
         // init camera
         cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
@@ -70,17 +78,17 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         binding.imgBtnHelp.setOnClickListener{
             if(isFlashOn) {
                 if(modelInUse == 1){
-                    textToSpeechBahasa(Constants.HELP_MODE_1_FLASH_ON)
+                    textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
                 } else {
                     // model 2
-                    textToSpeechBahasa(Constants.HELP_MODE_2_FLASH_ON)
+                    textToSpeech(Constants.HELP_MODE_2_FLASH_ON)
                 }
             } else {
                 if(modelInUse == 1){
-                    textToSpeechBahasa(Constants.HELP_MODE_1_FLASH_OFF)
+                    textToSpeech(Constants.HELP_MODE_1_FLASH_OFF)
                 } else {
                     // model 2
-                    textToSpeechBahasa(Constants.HELP_MODE_2_FLASH_OFF)
+                    textToSpeech(Constants.HELP_MODE_2_FLASH_OFF)
                 }
             }
         }
@@ -95,13 +103,13 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 // mode 2
                 modelInUse = 2
                 // text to speech
-                textToSpeechBahasa(Constants.SWITCH_TO_MODE_2)
+                textToSpeech(Constants.SWITCH_TO_MODE_2)
 
             } else {
                 // mode 1
                 modelInUse = 1
                 // text to speech
-                textToSpeechBahasa(Constants.SWITCH_TO_MODE_1)
+                textToSpeech(Constants.SWITCH_TO_MODE_1)
 
             }
         }
@@ -140,7 +148,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 binding.imgBtnFlash.setBackgroundResource(R.drawable.ic_flash_on)
 
                 // text to speech
-                textToSpeechBahasa(Constants.FLASH_ON)
+                textToSpeech(Constants.FLASH_ON)
             } else {
                 //cameraM.setTorchMode(cameraId, false)
 
@@ -151,7 +159,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 binding.imgBtnFlash.setBackgroundResource(R.drawable.ic_flash_off)
 
                 // text to speech
-                textToSpeechBahasa(Constants.FLASH_OFF)
+                textToSpeech(Constants.FLASH_OFF)
             }
         }
     }
@@ -160,14 +168,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         Toast.makeText(c, s, Toast.LENGTH_SHORT).show()
     }
 
-    private fun textToSpeechBahasa(s: String) {
-        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
-            if (it == TextToSpeech.SUCCESS) {
-                tts.language = Locale("id", "ID")
-                tts.setSpeechRate(1.0f)
-                tts.speak(s, TextToSpeech.QUEUE_ADD, null)
-            }
-        })
+    private fun textToSpeech(s: String) {
+        tts.speak(s, TextToSpeech.QUEUE_FLUSH, null)
     }
 
     private fun checkCameraAccess() {
