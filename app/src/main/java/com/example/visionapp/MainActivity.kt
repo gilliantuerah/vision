@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 tts.setSpeechRate(1.0f)
 
                 // welcome speech
-                tts.speak(Constants.HELP_MODE_1_FLASH_OFF, TextToSpeech.QUEUE_FLUSH, null)
+                tts.speak(getWelcomeSpeech(), TextToSpeech.QUEUE_FLUSH, null)
             }
         })
 
@@ -188,8 +188,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         val cameraProviderFuture = ProcessCameraProvider
             .getInstance(this)
 
-        Log.d(TAG,"heloo masuk siniuu")
-
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
             preview = Preview.Builder()
@@ -202,8 +200,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
             // use back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-            Log.d(TAG,"heloo masuk sini")
 
             // ImageAnalysis. Using RGBA 8888 to match how our models work
             imageAnalyzer =
@@ -225,7 +221,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                                     Bitmap.Config.ARGB_8888
                                 )
                             }
-                            Log.d(TAG,"heloo masuk")
                             detectObjects(image)
                         }
                     }
@@ -249,9 +244,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // Copy out RGB bits to the shared bitmap buffer
         image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
 
-        Log.d(TAG, "masuk detect object")
-        Log.d(TAG, image.toString())
-
         val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
         objectDetectorHelper.detect(bitmapBuffer, imageRotation)
@@ -268,8 +260,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 startCamera()
             }else{
                 textMessage("permission not granted by the user", this)
-
-                // TODO: tts user should grant camera access to use app
+                textToSpeech(Constants.NO_CAMERA_ACCESS)
             }
         }
     }
@@ -280,6 +271,15 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 baseContext, it
             ) == PackageManager.PERMISSION_GRANTED
         }
+
+    private fun getWelcomeSpeech(): String {
+        if(allPermissionGranted()){
+            return Constants.HELP_MODE_1_FLASH_OFF
+        }
+
+        // camera not granted
+        return Constants.NO_CAMERA_ACCESS
+    }
 
     override fun onError(error: String) {
         // TODO: Not yet implemented
