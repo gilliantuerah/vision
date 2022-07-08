@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var tts : TextToSpeech
+    private lateinit var ttsDetection: TextToSpeech
 
     private lateinit var cameraM: CameraManager
     private lateinit var cameraExecutor: ExecutorService
@@ -172,6 +173,10 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         tts.speak(s, TextToSpeech.QUEUE_FLUSH, null)
     }
 
+    private fun textToSpeechObjectDetected(s: String) {
+        tts.speak(s, TextToSpeech.QUEUE_ADD, null)
+    }
+
     private fun checkCameraAccess() {
         if(allPermissionGranted()){
             startCamera()
@@ -185,6 +190,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     private fun startCamera(){
+        // init camera provider
         val cameraProviderFuture = ProcessCameraProvider
             .getInstance(this)
 
@@ -282,8 +288,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     override fun onError(error: String) {
-        // TODO: Not yet implemented
-        Log.d(TAG, "helo masuk error")
+        // show error on toast
+        // TODO: consider to tell error via tts
+        textMessage(error, this)
     }
 
     override fun onResults(
@@ -293,14 +300,20 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         imageWidth: Int
     ) {
 
-        Log.d(TAG, results.toString())
-
         // Pass necessary information to OverlayView for drawing on the canvas
         binding.overlay.setResults(
             results ?: LinkedList<Detection>(),
             imageHeight,
             imageWidth
         )
+
+        if (results != null) {
+            for (result in results) {
+                // objek yang terdeteksi masuk queue untuk di-output sebagai speech
+                // output setelah obrolan lainnya selesai dilakukan
+                textToSpeechObjectDetected(result.categories[0].label)
+            }
+        }
 
         // Force a redraw
         binding.overlay.invalidate()

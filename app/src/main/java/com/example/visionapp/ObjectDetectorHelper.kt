@@ -76,8 +76,6 @@ class ObjectDetectorHelper(
                 else -> "mobilenetv1.tflite"
             }
 
-        Log.d("nama model", modelName.toString())
-
         try {
             objectDetector =
                 ObjectDetector.createFromFileAndOptions(context, modelName, optionsBuilder.build())
