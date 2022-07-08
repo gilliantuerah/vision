@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
+import androidx.camera.core.Camera
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var ttsDetection: TextToSpeech
 
     private lateinit var cameraM: CameraManager
+    private lateinit var camera: Camera
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var cameraId: String
     private var isFlashOn = false
@@ -70,8 +72,10 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             context = applicationContext,
             objectDetectorListener = this)
 
-        // init camera
+        // init camera manager
         cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+        // init camera
 
         checkCameraAccess()
 
@@ -120,7 +124,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     @RequiresApi(Build.VERSION_CODES.M)
     private fun flashlightOnClick(v: View?) {
         val isFlashAvailable = applicationContext.packageManager
-            .hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)
+            .hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
 
         if (!isFlashAvailable) {
             Log.d(TAG, "gapunya flash")
@@ -136,11 +140,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 Log.d(TAG, cameraId)
 
             } catch (e: CameraAccessException) {
+                Log.d(TAG, "error ni ges si flash ges$e")
                 e.printStackTrace()
             }
 
-            if (!isFlashOn) {
-                //cameraM.setTorchMode(cameraId, true)
+            if (!isFlashOn) { // ACTION: TURN ON FLASH
+                camera.cameraControl.enableTorch(true)
 
                 // flashlight turned on
                 isFlashOn = true
@@ -150,8 +155,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
                 // text to speech
                 textToSpeech(Constants.FLASH_ON)
-            } else {
-                //cameraM.setTorchMode(cameraId, false)
+            } else { // ACTION: TURN OFF FLASH
+                camera.cameraControl.enableTorch(false)
 
                 // flashlight turned off
                 isFlashOn = false
@@ -233,7 +238,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
+                camera = cameraProvider.bindToLifecycle(
                     this,
                     cameraSelector,
                     preview,
