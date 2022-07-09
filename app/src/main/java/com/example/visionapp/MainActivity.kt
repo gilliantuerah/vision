@@ -1,5 +1,6 @@
 package com.example.visionapp
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
@@ -53,8 +54,18 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // init camera executor
-        cameraExecutor = Executors.newSingleThreadExecutor()
+        // before do the initialization for camera, check if device has camera first
+        if(checkCameraHardware(this)) {
+            // init camera executor
+            cameraExecutor = Executors.newSingleThreadExecutor()
+            // init camera manager
+            cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            // check camera permission
+            checkCameraAccess()
+        } else {
+            textMessage("Your device has no camera", this)
+        }
+
 
         // init tts bahasa
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
@@ -71,13 +82,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         objectDetectorHelper = ObjectDetectorHelper(
             context = applicationContext,
             objectDetectorListener = this)
-
-        // init camera manager
-        cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-
-        // init camera
-
-        checkCameraAccess()
 
         // TODO: on click button help
         binding.imgBtnHelp.setOnClickListener{
@@ -182,6 +186,11 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         tts.speak(s, TextToSpeech.QUEUE_ADD, null)
     }
 
+    /** Check if this device has a camera */
+    private fun checkCameraHardware(context: Context): Boolean {
+        return context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)
+    }
+
     private fun checkCameraAccess() {
         if(allPermissionGranted()){
             startCamera()
@@ -193,6 +202,29 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             )
         }
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == Constants.REQUEST_CODE_PERMISSIONS){
+            if(allPermissionGranted()){
+                startCamera()
+            }else{
+                textMessage("permission not granted by the user", this)
+                textToSpeech(Constants.NO_CAMERA_ACCESS)
+            }
+        }
+    }
+
+    private fun allPermissionGranted() =
+        Constants.REQUIRED_PERMISSIONS.all {
+            ContextCompat.checkSelfPermission(
+                baseContext, it
+            ) == PackageManager.PERMISSION_GRANTED
+        }
 
     private fun startCamera(){
         // init camera provider
@@ -259,29 +291,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // Pass Bitmap and rotation to the object detector helper for processing and detection
         objectDetectorHelper.detect(bitmapBuffer, imageRotation)
     }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == Constants.REQUEST_CODE_PERMISSIONS){
-            if(allPermissionGranted()){
-                startCamera()
-            }else{
-                textMessage("permission not granted by the user", this)
-                textToSpeech(Constants.NO_CAMERA_ACCESS)
-            }
-        }
-    }
-
-    private fun allPermissionGranted() =
-        Constants.REQUIRED_PERMISSIONS.all {
-            ContextCompat.checkSelfPermission(
-                baseContext, it
-            ) == PackageManager.PERMISSION_GRANTED
-        }
 
     private fun getWelcomeSpeech(): String {
         if(allPermissionGranted()){
