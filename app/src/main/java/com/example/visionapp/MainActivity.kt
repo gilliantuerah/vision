@@ -1,6 +1,5 @@
 package com.example.visionapp
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
@@ -21,6 +20,8 @@ import androidx.camera.core.ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.example.visionapp.databinding.ActivityMainBinding
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.util.*
@@ -41,7 +42,14 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private var isFlashOn = false
 
     // make it public, accessible to other file (ObjectDetectorHelper file)
-    var modelInUse: Int = 0
+    private var modelInUse: MutableLiveData<Int> = MutableLiveData<Int>(0)
+    var modelName: String = when (modelInUse.value) {
+        MODEL_MOBILENETV1 -> "mobilenetv1.tflite"
+        MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
+        MODEL_EFFICIENTDETV1 -> "efficientdet-lite1.tflite"
+        MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
+        else -> "mobilenetv1.tflite"
+    }
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
@@ -86,14 +94,14 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // TODO: on click button help
         binding.imgBtnHelp.setOnClickListener{
             if(isFlashOn) {
-                if(modelInUse == 0){
+                if(modelInUse.value == 0){
                     textToSpeech(Constants.HELP_MODE_0_FLASH_ON)
                 } else {
                     // model 1
                     textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
                 }
             } else {
-                if(modelInUse == 0){
+                if(modelInUse.value == 0){
                     textToSpeech(Constants.HELP_MODE_0_FLASH_OFF)
                 } else {
                     // model 1
@@ -110,6 +118,17 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         binding.switchModel.setOnCheckedChangeListener{ _, isChecked ->
             modelSwitchOnClick(isChecked)
         }
+
+        // listen to modelInUse on change
+        modelInUse.observe(this, Observer{
+            modelName = when (modelInUse.value) {
+                MODEL_MOBILENETV1 -> "mobilenetv1.tflite"
+                MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
+                MODEL_EFFICIENTDETV1 -> "efficientdet-lite1.tflite"
+                MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
+                else -> "mobilenetv1.tflite"
+            }
+        })
     }
 
     override fun onStop() {
@@ -124,13 +143,13 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private fun modelSwitchOnClick(isChecked: Boolean) {
         if (isChecked) {
             // change to mode 1
-            modelInUse = 1
+            modelInUse.value = 1
             // text to speech
             textToSpeech(Constants.SWITCH_TO_MODE_1)
 
         } else {
             // change to mode 0
-            modelInUse = 0
+            modelInUse.value = 0
             // text to speech
             textToSpeech(Constants.SWITCH_TO_MODE_0)
         }
@@ -301,7 +320,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        objectDetectorHelper.detect(bitmapBuffer, imageRotation)
+        objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName)
     }
 
     private fun getWelcomeSpeech(): String {
@@ -346,4 +365,10 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
     }
 
+    companion object {
+        const val MODEL_MOBILENETV1 = 0
+        const val MODEL_EFFICIENTDETV0 = 1
+        const val MODEL_EFFICIENTDETV1 = 2
+        const val MODEL_EFFICIENTDETV2 = 3
+    }
 }

@@ -12,14 +12,15 @@ import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 
+
 class ObjectDetectorHelper(
-    var threshold: Float = 0.5f,
-    var numThreads: Int = 2,
-    var maxResults: Int = 3,
-    var currentDelegate: Int = 0,
-    var currentModel: Int = MainActivity().modelInUse,
-    val context: Context,
-    val objectDetectorListener: DetectorListener?
+    private var threshold: Float = 0.5f,
+    private var numThreads: Int = 2,
+    private var maxResults: Int = 3,
+    private var currentDelegate: Int = 0,
+    private var modelName: String = MainActivity().modelName,
+    private val context: Context,
+    private val objectDetectorListener: DetectorListener?
 ) {
 
     // For this example this needs to be a var so it can be reset on changes. If the ObjectDetector
@@ -27,7 +28,7 @@ class ObjectDetectorHelper(
     private var objectDetector: ObjectDetector? = null
 
     init {
-        setupObjectDetector()
+        setupObjectDetector(modelName)
     }
 
     fun clearObjectDetector() {
@@ -38,7 +39,7 @@ class ObjectDetectorHelper(
     // thread that is using it. CPU and NNAPI delegates can be used with detectors
     // that are created on the main thread and used on a background thread, but
     // the GPU delegate needs to be used on the thread that initialized the detector
-    fun setupObjectDetector() {
+    fun setupObjectDetector(modelName: String) {
         // Create the base options for the detector using specifies max results and score threshold
         val optionsBuilder =
             ObjectDetector.ObjectDetectorOptions.builder()
@@ -67,18 +68,6 @@ class ObjectDetectorHelper(
 
         optionsBuilder.setBaseOptions(baseOptionsBuilder.build())
 
-        val modelName =
-            when (currentModel) {
-                MODEL_MOBILENETV1 -> "mobilenetv1.tflite"
-                MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
-                MODEL_EFFICIENTDETV1 -> "efficientdet-lite1.tflite"
-                MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
-                else -> "mobilenetv1.tflite"
-            }
-
-        Log.d(Constants.TAG, currentModel.toString())
-        Log.d(Constants.TAG, modelName)
-
         try {
             objectDetector =
                 ObjectDetector.createFromFileAndOptions(context, modelName, optionsBuilder.build())
@@ -90,10 +79,12 @@ class ObjectDetectorHelper(
         }
     }
 
-    fun detect(image: Bitmap, imageRotation: Int) {
+    fun detect(image: Bitmap, imageRotation: Int, modelName: String) {
         if (objectDetector == null) {
-            setupObjectDetector()
+            setupObjectDetector(modelName)
         }
+
+        Log.d(Constants.TAG, modelName)
 
         // Inference time is the difference between the system time at the start and finish of the
         // process
@@ -133,9 +124,5 @@ class ObjectDetectorHelper(
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
         const val DELEGATE_NNAPI = 2
-        const val MODEL_MOBILENETV1 = 0
-        const val MODEL_EFFICIENTDETV0 = 1
-        const val MODEL_EFFICIENTDETV1 = 2
-        const val MODEL_EFFICIENTDETV2 = 3
     }
 }
