@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var tts : TextToSpeech
-    private lateinit var ttsDetection: TextToSpeech
 
     private lateinit var cameraM: CameraManager
     private lateinit var camera: Camera
@@ -121,6 +120,15 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 textToSpeech(Constants.SWITCH_TO_MODE_1)
 
             }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        // stop text to speech on application close
+        if(tts != null){
+            tts.shutdown();
         }
     }
 
