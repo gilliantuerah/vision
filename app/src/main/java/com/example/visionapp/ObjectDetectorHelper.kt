@@ -17,7 +17,7 @@ class ObjectDetectorHelper(
     var numThreads: Int = 2,
     var maxResults: Int = 3,
     var currentDelegate: Int = 0,
-    var currentModel: Int = 2,
+    var currentModel: Int = MainActivity().modelInUse,
     val context: Context,
     val objectDetectorListener: DetectorListener?
 ) {
@@ -75,6 +75,9 @@ class ObjectDetectorHelper(
                 MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
                 else -> "mobilenetv1.tflite"
             }
+
+        Log.d(Constants.TAG, currentModel.toString())
+        Log.d(Constants.TAG, modelName)
 
         try {
             objectDetector =

@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 // TODO: delete later
-private const val TAG = "MyActivity"
 
 class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener {
     private lateinit var binding: ActivityMainBinding
@@ -40,7 +39,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var cameraId: String
     private var isFlashOn = false
-    private var modelInUse = 1
+
+    // make it public, accessible to other file (ObjectDetectorHelper file)
+    var modelInUse: Int = 0
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
@@ -85,41 +86,29 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // TODO: on click button help
         binding.imgBtnHelp.setOnClickListener{
             if(isFlashOn) {
-                if(modelInUse == 1){
-                    textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
+                if(modelInUse == 0){
+                    textToSpeech(Constants.HELP_MODE_0_FLASH_ON)
                 } else {
-                    // model 2
-                    textToSpeech(Constants.HELP_MODE_2_FLASH_ON)
+                    // model 1
+                    textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
                 }
             } else {
-                if(modelInUse == 1){
-                    textToSpeech(Constants.HELP_MODE_1_FLASH_OFF)
+                if(modelInUse == 0){
+                    textToSpeech(Constants.HELP_MODE_0_FLASH_OFF)
                 } else {
-                    // model 2
-                    textToSpeech(Constants.HELP_MODE_2_FLASH_OFF)
+                    // model 1
+                    textToSpeech(Constants.HELP_MODE_1_FLASH_OFF)
                 }
             }
         }
         // TODO: on click button flashlight
         binding.imgBtnFlash.setOnClickListener{
             flashlightOnClick(it)
-            Log.d(TAG, "helo flash")
+            Log.d(Constants.TAG, "helo flash")
         }
         // TODO: handle switch button
         binding.switchModel.setOnCheckedChangeListener{ _, isChecked ->
-            if (isChecked) {
-                // mode 2
-                modelInUse = 2
-                // text to speech
-                textToSpeech(Constants.SWITCH_TO_MODE_2)
-
-            } else {
-                // mode 1
-                modelInUse = 1
-                // text to speech
-                textToSpeech(Constants.SWITCH_TO_MODE_1)
-
-            }
+            modelSwitchOnClick(isChecked)
         }
     }
 
@@ -132,6 +121,21 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
     }
 
+    private fun modelSwitchOnClick(isChecked: Boolean) {
+        if (isChecked) {
+            // change to mode 1
+            modelInUse = 1
+            // text to speech
+            textToSpeech(Constants.SWITCH_TO_MODE_1)
+
+        } else {
+            // change to mode 0
+            modelInUse = 0
+            // text to speech
+            textToSpeech(Constants.SWITCH_TO_MODE_0)
+        }
+    }
+
     @SuppressLint("ResourceAsColor")
     @RequiresApi(Build.VERSION_CODES.M)
     private fun flashlightOnClick(v: View?) {
@@ -139,20 +143,20 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             .hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
 
         if (!isFlashAvailable) {
-            Log.d(TAG, "gapunya flash")
+            Log.d(Constants.TAG, "gapunya flash")
         } else {
-            Log.d(TAG, "flash masuk")
+            Log.d(Constants.TAG, "flash masuk")
             try {
                 val cameraIdList = cameraM.cameraIdList
 
-                Log.d(TAG, cameraIdList.toString())
+                Log.d(Constants.TAG, cameraIdList.toString())
 
                 cameraId = cameraM.cameraIdList[0]
 
-                Log.d(TAG, cameraId)
+                Log.d(Constants.TAG, cameraId)
 
             } catch (e: CameraAccessException) {
-                Log.d(TAG, "error ni ges si flash ges$e")
+                Log.d(Constants.TAG, "error ni ges si flash ges$e")
                 e.printStackTrace()
             }
 
