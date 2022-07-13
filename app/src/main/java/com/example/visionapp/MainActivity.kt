@@ -136,25 +136,11 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             }
         })
 
-        // TODO: ganti pake API beneran (Api, PostResponse, RetrofitClient)
-        // retrofit
-        RetrofitClient.instance.getPosts().enqueue(object: Callback<ArrayList<PostResponse>>{
-            override fun onResponse(
-                call: Call<ArrayList<PostResponse>>,
-                response: Response<ArrayList<PostResponse>>
-            ) {
-                val responseCode = response.code().toString()
-                Log.d(Constants.TAG, "response code$responseCode")
+        // TODO: change with real func with GET padul later
+        getPostsDummy()
 
-                response.body()?.let { list.addAll(it)}
-                Log.d(Constants.TAG, list.toString())
-            }
-
-            override fun onFailure(call: Call<ArrayList<PostResponse>>, t: Throwable) {
-                TODO("Not yet implemented")
-            }
-
-        })
+        // TODO: change with real func with POST padul later
+        ceratePostsDummy()
     }
 
     override fun onStop() {
@@ -389,6 +375,52 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // Force a redraw
         binding.overlay.invalidate()
 
+    }
+
+    // TODO: ganti pake API beneran (Api, PostResponse, RetrofitClient)
+    private fun getPostsDummy() {
+        // retrofit
+        RetrofitClient.instance.getPosts().enqueue(object: Callback<ArrayList<PostResponse>>{
+            override fun onResponse(
+                call: Call<ArrayList<PostResponse>>,
+                response: Response<ArrayList<PostResponse>>
+            ) {
+                val responseCode = response.code().toString()
+                Log.d(Constants.TAG, "response code$responseCode")
+
+                response.body()?.let { list.addAll(it)}
+                Log.d(Constants.TAG, list.toString())
+            }
+
+            override fun onFailure(call: Call<ArrayList<PostResponse>>, t: Throwable) {
+                Log.e("Failed", t.message.toString())
+            }
+        })
+    }
+
+    // TODO: ganti pake API beneran (Api, CreatePostResponse, RetrofitClient)
+    private fun ceratePostsDummy() {
+        RetrofitClient.instance.createPosts(
+            10,
+            "judul apa hayo",
+            "apa coba isinya apa coba apa coba"
+        ).enqueue(object: Callback<CreatePostResponse>{
+            override fun onResponse(
+                call: Call<CreatePostResponse>,
+                response: Response<CreatePostResponse>
+            ) {
+                val responseCode = response.code().toString()
+                Log.d(Constants.TAG, "response code$responseCode")
+
+                val response = "response $response"
+                Log.d(Constants.TAG, response)
+            }
+
+            override fun onFailure(call: Call<CreatePostResponse>, t: Throwable) {
+                Log.e("Failed", t.message.toString())
+            }
+
+        })
     }
 
     companion object {
