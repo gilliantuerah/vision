@@ -307,6 +307,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                                     Bitmap.Config.ARGB_8888
                                 )
                             }
+                            //TODO: set delay on call detect function
                             detectObjects(image)
                         }
                     }
