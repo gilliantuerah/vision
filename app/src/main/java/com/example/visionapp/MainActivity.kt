@@ -24,6 +24,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.visionapp.databinding.ActivityMainBinding
 import org.tensorflow.lite.task.vision.detector.Detection
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -55,6 +58,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private var imageAnalyzer: ImageAnalysis? = null
     private lateinit var bitmapBuffer: Bitmap
     private lateinit var objectDetectorHelper: ObjectDetectorHelper
+
+    // TODO: data dummy for testing retrofit
+    private val list = ArrayList<PostResponse>()
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,12 +115,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 }
             }
         }
-        // TODO: on click button flashlight
+
         binding.imgBtnFlash.setOnClickListener{
             flashlightOnClick(it)
             Log.d(Constants.TAG, "helo flash")
         }
-        // TODO: handle switch button
+
         binding.switchModel.setOnCheckedChangeListener{ _, isChecked ->
             modelSwitchOnClick(isChecked)
         }
@@ -128,6 +134,26 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
                 else -> "mobilenetv1.tflite"
             }
+        })
+
+        // TODO: ganti pake API beneran (Api, PostResponse, RetrofitClient)
+        // retrofit
+        RetrofitClient.instance.getPosts().enqueue(object: Callback<ArrayList<PostResponse>>{
+            override fun onResponse(
+                call: Call<ArrayList<PostResponse>>,
+                response: Response<ArrayList<PostResponse>>
+            ) {
+                val responseCode = response.code().toString()
+                Log.d(Constants.TAG, "response code$responseCode")
+
+                response.body()?.let { list.addAll(it)}
+                Log.d(Constants.TAG, list.toString())
+            }
+
+            override fun onFailure(call: Call<ArrayList<PostResponse>>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+
         })
     }
 
@@ -279,7 +305,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             imageAnalyzer =
                 ImageAnalysis.Builder()
                     .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                    .setTargetRotation(binding.viewFinder.display.rotation)
+//                    .setTargetRotation(binding.viewFinder.display.rotation)
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .setOutputImageFormat(OUTPUT_IMAGE_FORMAT_RGBA_8888)
                     .build()
