@@ -84,8 +84,6 @@ class ObjectDetectorHelper(
             setupObjectDetector(modelName)
         }
 
-        Log.d(Constants.TAG, modelName)
-
         // Inference time is the difference between the system time at the start and finish of the
         // process
         var inferenceTime = SystemClock.uptimeMillis()
