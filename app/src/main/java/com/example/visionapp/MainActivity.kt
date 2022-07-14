@@ -1,7 +1,9 @@
 package com.example.visionapp
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.hardware.camera2.CameraAccessException
@@ -9,8 +11,10 @@ import android.hardware.camera2.CameraManager
 import androidx.camera.core.Camera
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -23,6 +27,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.visionapp.databinding.ActivityMainBinding
+import com.example.visionapp.databinding.DenyCameraDialogBinding
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.deny_camera_dialog.*
 import org.tensorflow.lite.task.vision.detector.Detection
 import retrofit2.Call
 import retrofit2.Callback
@@ -30,8 +37,6 @@ import retrofit2.Response
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
-// TODO: delete later
 
 class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener {
     private lateinit var binding: ActivityMainBinding
@@ -80,7 +85,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             textMessage("Your device has no camera", this)
         }
 
-
         // init tts bahasa
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
             if (it == TextToSpeech.SUCCESS) {
@@ -97,8 +101,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             context = applicationContext,
             objectDetectorListener = this)
 
-        // TODO: on click button help
-        binding.imgBtnHelp.setOnClickListener{
+        imgBtnHelp?.setOnClickListener{
             if(isFlashOn) {
                 if(modelInUse.value == 0){
                     textToSpeech(Constants.HELP_MODE_0_FLASH_ON)
@@ -116,12 +119,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             }
         }
 
-        binding.imgBtnFlash.setOnClickListener{
+        imgBtnFlash?.setOnClickListener{
             flashlightOnClick(it)
             Log.d(Constants.TAG, "helo flash")
         }
 
-        binding.switchModel.setOnCheckedChangeListener{ _, isChecked ->
+        switchModel?.setOnCheckedChangeListener{ _, isChecked ->
             modelSwitchOnClick(isChecked)
         }
 
@@ -149,6 +152,28 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // stop text to speech on application close
         if(tts != null){
             tts.shutdown();
+        }
+    }
+
+    private fun showPopupDenyDialog() {
+        // pop up dialog on access camera deny
+        // inflate the dialog
+        val denyCameraDialog = DenyCameraDialogBinding.inflate(layoutInflater)
+        // alert dialog builder
+        val alertDialogBuilder = AlertDialog.Builder(this)
+            .setView(denyCameraDialog.root)
+        // show dialog
+        val alertDialog = alertDialogBuilder.show()
+        // on click button setup
+        denyCameraDialog.btnAccess.setOnClickListener{
+            // go to setting
+            // TODO: go to specific app setting if possible
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        }
+        // on click button exit
+        denyCameraDialog.btnExit.setOnClickListener{
+            // keluar aplikasi
+            finish()
         }
     }
 
@@ -198,7 +223,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 isFlashOn = true
 
                 // change icon color
-                binding.imgBtnFlash.setBackgroundResource(R.drawable.ic_flash_on)
+                imgBtnFlash?.setBackgroundResource(R.drawable.ic_flash_on)
 
                 // text to speech
                 textToSpeech(Constants.FLASH_ON)
@@ -209,7 +234,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 isFlashOn = false
 
                 // change icon color
-                binding.imgBtnFlash.setBackgroundResource(R.drawable.ic_flash_off)
+                imgBtnFlash?.setBackgroundResource(R.drawable.ic_flash_off)
 
                 // text to speech
                 textToSpeech(Constants.FLASH_OFF)
@@ -258,6 +283,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             }else{
                 textMessage("permission not granted by the user", this)
                 textToSpeech(Constants.NO_CAMERA_ACCESS)
+
+                showPopupDenyDialog()
             }
         }
     }
@@ -280,7 +307,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 .build()
                 .also { mPreview ->
                     mPreview.setSurfaceProvider(
-                        binding.viewFinder.surfaceProvider
+                        viewFinder?.surfaceProvider
                     )
                 }
 
@@ -291,7 +318,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             imageAnalyzer =
                 ImageAnalysis.Builder()
                     .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-//                    .setTargetRotation(binding.viewFinder.display.rotation)
+//                    .setTargetRotation(viewFinder?.display.rotation)
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .setOutputImageFormat(OUTPUT_IMAGE_FORMAT_RGBA_8888)
                     .build()
@@ -359,7 +386,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     ) {
 
         // Pass necessary information to OverlayView for drawing on the canvas
-        binding.overlay.setResults(
+        overlay?.setResults(
             results ?: LinkedList<Detection>(),
             imageHeight,
             imageWidth
@@ -374,7 +401,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
 
         // Force a redraw
-        binding.overlay.invalidate()
+        overlay?.invalidate()
 
     }
 
