@@ -8,13 +8,12 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
-import androidx.camera.core.Camera
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -167,8 +166,11 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // on click button setup
         denyCameraDialog.btnAccess.setOnClickListener{
             // go to setting
-            // TODO: go to specific app setting if possible
-            startActivity(Intent(Settings.ACTION_SETTINGS))
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val uri: Uri = Uri.fromParts("package", packageName, null)
+            intent.data = uri
+            startActivity(intent)
         }
         // on click button exit
         denyCameraDialog.btnExit.setOnClickListener{
