@@ -101,21 +101,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             objectDetectorListener = this)
 
         imgBtnHelp?.setOnClickListener{
-            if(isFlashOn) {
-                if(modelInUse.value == 0){
-                    textToSpeech(Constants.HELP_MODE_0_FLASH_ON)
-                } else {
-                    // model 1
-                    textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
-                }
-            } else {
-                if(modelInUse.value == 0){
-                    textToSpeech(Constants.HELP_MODE_0_FLASH_OFF)
-                } else {
-                    // model 1
-                    textToSpeech(Constants.HELP_MODE_1_FLASH_OFF)
-                }
-            }
+            helpOnClick(it)
         }
 
         imgBtnFlash?.setOnClickListener{
@@ -191,6 +177,24 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             modelInUse.value = 0
             // text to speech
             textToSpeech(Constants.SWITCH_TO_MODE_0)
+        }
+    }
+
+    private  fun helpOnClick(v: View?) {
+        if(isFlashOn) {
+            if(modelInUse.value == 0){
+                textToSpeech(Constants.HELP_MODE_0_FLASH_ON)
+            } else {
+                // model 1
+                textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
+            }
+        } else {
+            if(modelInUse.value == 0){
+                textToSpeech(Constants.HELP_MODE_0_FLASH_OFF)
+            } else {
+                // model 1
+                textToSpeech(Constants.HELP_MODE_1_FLASH_OFF)
+            }
         }
     }
 
