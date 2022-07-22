@@ -18,7 +18,7 @@ class ObjectDetectorHelper(
     private var numThreads: Int = 2,
     private var maxResults: Int = 3,
     private var currentDelegate: Int = 0,
-    private var modelName: String = MainActivity().modelName,
+    modelName: String = MainActivity().modelName,
     private val context: Context,
     private val objectDetectorListener: DetectorListener?
 ) {

@@ -1,7 +1,9 @@
 package com.example.visionapp
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,7 +17,6 @@ import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -28,7 +29,6 @@ import androidx.lifecycle.Observer
 import com.example.visionapp.databinding.ActivityMainBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.deny_camera_dialog.*
 import org.tensorflow.lite.task.vision.detector.Detection
 import retrofit2.Call
 import retrofit2.Callback
@@ -36,6 +36,7 @@ import retrofit2.Response
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener {
     private lateinit var binding: ActivityMainBinding
@@ -63,6 +64,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var bitmapBuffer: Bitmap
     private lateinit var objectDetectorHelper: ObjectDetectorHelper
 
+    private lateinit var util: Utility
+    private var alertDialog: Dialog? = null
+
     // TODO: data dummy for testing retrofit
     private val list = ArrayList<PostResponse>()
 
@@ -71,18 +75,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // before do the initialization for camera, check if device has camera first
-        if(checkCameraHardware(this)) {
-            // init camera executor
-            cameraExecutor = Executors.newSingleThreadExecutor()
-            // init camera manager
-            cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            // check camera permission
-            checkCameraAccess()
-        } else {
-            textMessage("Your device has no camera", this)
-        }
 
         // init tts bahasa
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
@@ -99,6 +91,25 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         objectDetectorHelper = ObjectDetectorHelper(
             context = applicationContext,
             objectDetectorListener = this)
+
+        // init util
+        util = Utility(
+            context = applicationContext,
+            tts = tts
+        )
+
+        // before do the initialization for camera, check if device has camera first
+        if(util.checkCameraHardware()) {
+            // init camera executor
+            cameraExecutor = Executors.newSingleThreadExecutor()
+            // init camera manager
+            cameraM = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            // check camera permission
+            checkCameraAccess()
+        } else {
+            // TODO: consider to tell error via tts
+            util.textMessage("Your device has no camera", this)
+        }
 
         imgBtnHelp?.setOnClickListener{
             helpOnClick(it)
@@ -148,7 +159,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         val alertDialogBuilder = AlertDialog.Builder(this)
             .setView(denyCameraDialog.root)
         // show dialog
-        alertDialogBuilder.show()
+        alertDialog = alertDialogBuilder.show()
         // on click button setup
         denyCameraDialog.btnAccess.setOnClickListener{
             // go to setting
@@ -170,30 +181,30 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             // change to mode 1
             modelInUse.value = 1
             // text to speech
-            textToSpeech(Constants.SWITCH_TO_MODE_1)
+            util.textToSpeech(Constants.SWITCH_TO_MODE_1)
 
         } else {
             // change to mode 0
             modelInUse.value = 0
             // text to speech
-            textToSpeech(Constants.SWITCH_TO_MODE_0)
+            util.textToSpeech(Constants.SWITCH_TO_MODE_0)
         }
     }
 
     private  fun helpOnClick(v: View?) {
         if(isFlashOn) {
             if(modelInUse.value == 0){
-                textToSpeech(Constants.HELP_MODE_0_FLASH_ON)
+                util.textToSpeech(Constants.HELP_MODE_0_FLASH_ON)
             } else {
                 // model 1
-                textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
+                util.textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
             }
         } else {
             if(modelInUse.value == 0){
-                textToSpeech(Constants.HELP_MODE_0_FLASH_OFF)
+                util.textToSpeech(Constants.HELP_MODE_0_FLASH_OFF)
             } else {
                 // model 1
-                textToSpeech(Constants.HELP_MODE_1_FLASH_OFF)
+                util.textToSpeech(Constants.HELP_MODE_1_FLASH_OFF)
             }
         }
     }
@@ -232,7 +243,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 imgBtnFlash?.setBackgroundResource(R.drawable.ic_flash_on)
 
                 // text to speech
-                textToSpeech(Constants.FLASH_ON)
+                util.textToSpeech(Constants.FLASH_ON)
             } else { // ACTION: TURN OFF FLASH
                 camera.cameraControl.enableTorch(false)
 
@@ -243,26 +254,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 imgBtnFlash?.setBackgroundResource(R.drawable.ic_flash_off)
 
                 // text to speech
-                textToSpeech(Constants.FLASH_OFF)
+                util.textToSpeech(Constants.FLASH_OFF)
             }
         }
-    }
-
-    private fun textMessage(s: String, c: Context) {
-        Toast.makeText(c, s, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun textToSpeech(s: String) {
-        tts.speak(s, TextToSpeech.QUEUE_FLUSH, null)
-    }
-
-    private fun textToSpeechObjectDetected(s: String) {
-        tts.speak(s, TextToSpeech.QUEUE_ADD, null)
-    }
-
-    /** Check if this device has a camera */
-    private fun checkCameraHardware(context: Context): Boolean {
-        return context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)
     }
 
     private fun checkCameraAccess() {
@@ -285,11 +279,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == Constants.REQUEST_CODE_PERMISSIONS){
             if(allPermissionGranted()){
+                if(alertDialog?.isShowing == true) {
+                    alertDialog?.dismiss()
+                }
                 startCamera()
             }else{
-                textMessage("permission not granted by the user", this)
-                textToSpeech(Constants.NO_CAMERA_ACCESS)
-
+                util.textToSpeech(Constants.NO_CAMERA_ACCESS)
                 showPopupDenyDialog()
             }
         }
@@ -381,7 +376,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     override fun onError(error: String) {
         // show error on toast
         // TODO: consider to tell error via tts
-        textMessage(error, this)
+        util.textMessage(error, this)
     }
 
     override fun onResults(
@@ -402,7 +397,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             for (result in results) {
                 // objek yang terdeteksi masuk queue untuk di-output sebagai speech
                 // output setelah obrolan lainnya selesai dilakukan
-                textToSpeechObjectDetected(result.categories[0].label)
+                util.textToSpeechObjectDetected(result.categories[0].label)
             }
         }
 
