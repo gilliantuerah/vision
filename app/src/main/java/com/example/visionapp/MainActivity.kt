@@ -148,7 +148,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         val alertDialogBuilder = AlertDialog.Builder(this)
             .setView(denyCameraDialog.root)
         // show dialog
-        val alertDialog = alertDialogBuilder.show()
+        alertDialogBuilder.show()
         // on click button setup
         denyCameraDialog.btnAccess.setOnClickListener{
             // go to setting
