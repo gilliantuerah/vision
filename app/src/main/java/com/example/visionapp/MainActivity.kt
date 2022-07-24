@@ -168,6 +168,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             val uri: Uri = Uri.fromParts("package", packageName, null)
             intent.data = uri
             startActivity(intent)
+            finish()
         }
         // on click button exit
         denyCameraDialog.btnExit.setOnClickListener{

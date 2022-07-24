@@ -15,10 +15,11 @@
         android:layout_height="wrap_content"/>
     <TextView
         android:id="@+id/tvAccessDeny"
-        android:text="Akses kamera ditolak. Silakan beri akses kamera untuk mulai menggunakan. Izin > Kamera -> Izinkan ballalaal"
+        android:text="Akses kamera ditolak. Silakan beri akses kamera dengan membuka menu Izin, pilih Kamera, dan pilih Izinkan hanya saat aplikasi digunakan."
         android:gravity="center"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
+        android:textColor="@color/black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
@@ -33,12 +34,17 @@
             android:id="@+id/btnAccess"
             android:text="Beri Akses"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"/>
         <Button
             android:id="@+id/btnExit"
             android:text="Keluar Aplikasi"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-10dp"
+            android:textAllCaps="false"
+            android:background="@android:color/transparent"
+            android:textColor="@color/grey"/>
 
     </LinearLayout>
 
