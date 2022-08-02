@@ -5,4 +5,6 @@
     <color name="grey">#FF9A9A9A</color>
     <color name="white">#FFFFFFFF</color>
     <color name="yellow">#FFFFFF00</color>
+
+    <color name="deviderView">#FF707070</color>
 </resources>

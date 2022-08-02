@@ -16,7 +16,9 @@ import android.os.Bundle
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -27,8 +29,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.visionapp.databinding.ActivityMainBinding
+import com.example.visionapp.databinding.BottomSheetDialogBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.bottom_sheet_dialog.*
 import org.tensorflow.lite.task.vision.detector.Detection
 import retrofit2.Call
 import retrofit2.Callback
@@ -81,9 +86,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             if (it == TextToSpeech.SUCCESS) {
                 tts.language = Locale("id", "ID")
                 tts.setSpeechRate(1.0f)
-
-                // welcome speech
-                tts.speak(getWelcomeSpeech(), TextToSpeech.QUEUE_FLUSH, null)
             }
         })
 
@@ -193,21 +195,25 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     private  fun helpOnClick(v: View?) {
-        if(isFlashOn) {
-            if(modelInUse.value == 0){
-                util.textToSpeech(Constants.HELP_MODE_0_FLASH_ON)
-            } else {
-                // model 1
-                util.textToSpeech(Constants.HELP_MODE_1_FLASH_ON)
-            }
-        } else {
-            if(modelInUse.value == 0){
-                util.textToSpeech(Constants.HELP_MODE_0_FLASH_OFF)
-            } else {
-                // model 1
-                util.textToSpeech(Constants.HELP_MODE_1_FLASH_OFF)
-            }
+        // bottom sheet dialog
+        val bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+        val bottomSheetView = LayoutInflater.from(applicationContext).inflate(
+            R.layout.bottom_sheet_dialog,
+            findViewById<LinearLayout>(R.id.bottomSheet)
+        )
+
+        // on click button tutup
+        bottomSheetView.findViewById<View>(R.id.btnClose).setOnClickListener{
+            bottomSheetDialog.dismiss()
         }
+
+        // on click button speaker
+        bottomSheetView.findViewById<View>(R.id.imgBtnSpeaker).setOnClickListener{
+            util.textToSpeech(Constants.HELP_TEXT)
+        }
+
+        bottomSheetDialog.setContentView(bottomSheetView)
+        bottomSheetDialog.show()
     }
 
     @SuppressLint("ResourceAsColor")
@@ -363,15 +369,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
         objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName)
-    }
-
-    private fun getWelcomeSpeech(): String {
-        if(allPermissionGranted()){
-            return Constants.HELP_MODE_1_FLASH_OFF
-        }
-
-        // camera not granted
-        return Constants.NO_CAMERA_ACCESS
     }
 
     override fun onError(error: String) {

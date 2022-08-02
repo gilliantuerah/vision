@@ -66,7 +66,7 @@
                 android:scaleY="1.5"
                 android:thumb="@drawable/thumb_selector"
                 android:track="@drawable/track_selector"
-                android:contentDescription="tombol ganti mode" />
+                android:contentDescription="tombol ubah mode" />
         </RelativeLayout>
 
     </LinearLayout>

@@ -5,7 +5,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="10dp">
+    android:paddingLeft="50dp"
+    android:paddingRight="50dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
     <ImageView
         android:src="@drawable/ic_no_camera_access"
         android:background="@drawable/ic_blue_circle"
@@ -29,19 +32,24 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
         android:layout_marginTop="15dp">
+
         <Button
             android:id="@+id/btnAccess"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:background="@drawable/shape_blue_solid"
             android:text="Beri Akses"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAllCaps="false"/>
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+
         <Button
             android:id="@+id/btnExit"
             android:text="Keluar Aplikasi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-10dp"
             android:textAllCaps="false"
             android:background="@android:color/transparent"
             android:textColor="@color/grey"/>
