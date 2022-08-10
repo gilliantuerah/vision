@@ -194,6 +194,17 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     private  fun helpOnClick(v: View?) {
+        showBottomSheetDialog()
+    }
+
+    private fun showBottomSheetDialog() {
+        // save value for bottom sheet opened
+        val sharedPreference =  getSharedPreferences("sharedPrefs",Context.MODE_PRIVATE)
+        var editor = sharedPreference.edit()
+        editor.apply {
+            putBoolean("showFirstBottomSheet", true)
+        }.apply()
+
         // bottom sheet dialog
         val bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         val bottomSheetView = LayoutInflater.from(applicationContext).inflate(
@@ -271,6 +282,13 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private fun checkCameraAccess() {
         if(allPermissionGranted()){
             startCamera()
+            // load shared preferences data
+            val sharedPreference =  getSharedPreferences("sharedPrefs",Context.MODE_PRIVATE)
+            val showFirstBottomSheet = sharedPreference.getBoolean("showFirstBottomSheet", false)
+            // if bottom sheet never show
+            if(!showFirstBottomSheet){
+                showBottomSheetDialog()
+            }
         }else{
             ActivityCompat.requestPermissions(
                 this,
@@ -291,6 +309,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 if(alertDialog?.isShowing == true) {
                     alertDialog?.dismiss()
                 }
+                showBottomSheetDialog()
                 startCamera()
             }else{
                 util.textToSpeech(Constants.NO_CAMERA_ACCESS)
