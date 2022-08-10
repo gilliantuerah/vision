@@ -119,7 +119,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         imgBtnFlash?.setOnClickListener{
             flashlightOnClick(it)
-            Log.d(Constants.TAG, "helo flash")
         }
 
         switchModel?.setOnCheckedChangeListener{ _, isChecked ->
@@ -141,7 +140,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         getPostsDummy()
 
         // TODO: change with real func with POST padul later
-        ceratePostsDummy()
+        createPostsDummy()
     }
 
     override fun onStop() {
@@ -223,8 +222,10 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             .hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
 
         if (!isFlashAvailable) {
+            // TODO: ganti pake toast yg bagus y
             Log.d(Constants.TAG, "gapunya flash")
         } else {
+            // TODO: KEKNYA INI DIAPUS GASIIII
             Log.d(Constants.TAG, "flash masuk")
             try {
                 val cameraIdList = cameraM.cameraIdList
@@ -239,6 +240,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 Log.d(Constants.TAG, "error ni ges si flash ges$e")
                 e.printStackTrace()
             }
+            // TODO: TUTUP TODO
 
             if (!isFlashOn) { // ACTION: TURN ON FLASH
                 camera.cameraControl.enableTorch(true)
@@ -426,7 +428,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     // TODO: ganti pake API beneran (Api, CreatePostResponse, RetrofitClient)
-    private fun ceratePostsDummy() {
+    private fun createPostsDummy() {
         RetrofitClient.instance.createPosts(
             10,
             "judul apa hayo",
