@@ -57,11 +57,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     // make it public, accessible to other file (ObjectDetectorHelper file)
     private var modelInUse: MutableLiveData<Int> = MutableLiveData<Int>(0)
     var modelName: String = when (modelInUse.value) {
-        MODEL_MOBILENETV1 -> "mobilenetv1.tflite"
-        MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
-        MODEL_EFFICIENTDETV1 -> "efficientdet-lite1.tflite"
-        MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
-        else -> "mobilenetv1.tflite"
+        MODEL_1 -> Constants.MODEL_1
+        MODEL_2 -> Constants.MODEL_2
+        else -> Constants.MODEL_1
     }
 
     private var preview: Preview? = null
@@ -80,6 +78,15 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // listen to modelInUse on change
+        modelInUse.observe(this, Observer{
+            modelName = when (modelInUse.value) {
+                MODEL_1 -> Constants.MODEL_1
+                MODEL_2 -> Constants.MODEL_2
+                else -> Constants.MODEL_1
+            }
+        })
 
         // init tts bahasa
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
@@ -124,17 +131,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         switchModel?.setOnCheckedChangeListener{ _, isChecked ->
             modelSwitchOnClick(isChecked)
         }
-
-        // listen to modelInUse on change
-        modelInUse.observe(this, Observer{
-            modelName = when (modelInUse.value) {
-                MODEL_MOBILENETV1 -> "mobilenetv1.tflite"
-                MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
-                MODEL_EFFICIENTDETV1 -> "efficientdet-lite1.tflite"
-                MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
-                else -> "mobilenetv1.tflite"
-            }
-        })
 
         // TODO: change with real func with GET padul later
         getPostsDummy()
@@ -215,6 +211,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // on click button tutup
         bottomSheetView.findViewById<View>(R.id.btnClose).setOnClickListener{
             bottomSheetDialog.dismiss()
+            util.textToSpeech("")
         }
 
         // on click button speaker
@@ -472,9 +469,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     companion object {
-        const val MODEL_MOBILENETV1 = 0
-        const val MODEL_EFFICIENTDETV0 = 1
-        const val MODEL_EFFICIENTDETV1 = 2
-        const val MODEL_EFFICIENTDETV2 = 3
+        const val MODEL_1 = 0
+        const val MODEL_2 = 1
     }
 }
