@@ -443,14 +443,14 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             // start speak
             isTTSObjectFinished = false
             // opening
-            util.textToSpeechObjectDetected("Objek terdeteksi. Ada barang", ttsId)
+            util.textToSpeechObjectDetected(Constants.OPEN_DETECTION, ttsId)
             for (result in results) {
                 // objek yang terdeteksi masuk queue untuk di-output sebagai speech
                 // output setelah obrolan lainnya selesai dilakukan
                 util.textToSpeechObjectDetected(result.categories[0].label, ttsObjectId)
             }
             // closing
-            util.textToSpeechObjectDetected("selesai", ttsFinishedId)
+            util.textToSpeechObjectDetected(Constants.CLOSE_DETECTION, ttsFinishedId)
         }
 
         // Force a redraw

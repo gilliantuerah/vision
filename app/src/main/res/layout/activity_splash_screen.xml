@@ -10,9 +10,9 @@
     <!--  TODO: change src file logo  -->
     <ImageView
         android:id="@+id/ivLogo"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:src="@drawable/ic_vision_logo_dummy"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:src="@drawable/ic_whitebg_logo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

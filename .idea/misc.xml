@@ -18,10 +18,12 @@
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_flashlight.xml" value="0.165" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_help.xml" value="0.129" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+        <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_mata.xml" value="0.1" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_no_camera_access.xml" value="0.1" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_speaker.xml" value="0.126" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_vision_logo_dummy.xml" value="0.1" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_white_circle.xml" value="0.1" />
+        <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/ic_whitebg_logo.xml" value="0.132" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/shape.xml" value="0.165" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/shape_blue_border.xml" value="0.1" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/drawable/shape_blue_solid.xml" value="0.126" />
@@ -35,6 +37,8 @@
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/layout/deny_camera_dialog.xml" value="0.22" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/layout/fragment_camera.xml" value="0.15989583333333332" />
         <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/menu/bottom_menu.xml" value="0.15989583333333332" />
+        <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1" />
+        <entry key="..\:/gillian tuerah/AndroidStudioProjects/vision/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.132" />
       </map>
     </option>
   </component>
