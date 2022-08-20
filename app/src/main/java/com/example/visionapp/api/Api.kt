@@ -1,4 +1,4 @@
-package com.example.visionapp
+package com.example.visionapp.api
 
 import retrofit2.Call
 import retrofit2.http.Field

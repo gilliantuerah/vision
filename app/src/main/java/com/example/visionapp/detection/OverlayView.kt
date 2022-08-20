@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.visionapp
+package com.example.visionapp.detection
 
 import android.content.Context
 import android.graphics.Canvas
@@ -25,6 +25,7 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.example.visionapp.R
 import java.util.LinkedList
 import kotlin.math.max
 import org.tensorflow.lite.task.vision.detector.Detection
@@ -92,8 +93,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
             canvas.drawRect(
                 left,
                 top,
-                left + textWidth + Companion.BOUNDING_RECT_TEXT_PADDING,
-                top + textHeight + Companion.BOUNDING_RECT_TEXT_PADDING,
+                left + textWidth + BOUNDING_RECT_TEXT_PADDING,
+                top + textHeight + BOUNDING_RECT_TEXT_PADDING,
                 textBackgroundPaint
             )
 

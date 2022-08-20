@@ -28,8 +28,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.example.visionapp.api.CreatePostResponse
+import com.example.visionapp.api.PostResponse
+import com.example.visionapp.api.RetrofitClient
 import com.example.visionapp.databinding.ActivityMainBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
+import com.example.visionapp.detection.ObjectDetectorHelper
+import com.example.visionapp.env.Constants
+import com.example.visionapp.env.Utility
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
 import org.tensorflow.lite.task.vision.detector.Detection

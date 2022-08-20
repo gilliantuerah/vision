@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:layout_above="@id/linearLayout" />
 
-    <com.example.visionapp.OverlayView
+    <com.example.visionapp.detection.OverlayView
         android:id="@+id/overlay"
         android:layout_height="match_parent"
         android:layout_width="match_parent"

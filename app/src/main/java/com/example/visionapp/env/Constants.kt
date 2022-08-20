@@ -1,4 +1,4 @@
-package com.example.visionapp
+package com.example.visionapp.env
 
 object Constants {
 

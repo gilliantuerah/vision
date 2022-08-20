@@ -1,4 +1,4 @@
-package com.example.visionapp
+package com.example.visionapp.api
 
 // TODO: adjust with return data type API padul
 data class CreatePostResponse(

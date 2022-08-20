@@ -1,4 +1,4 @@
-package com.example.visionapp
+package com.example.visionapp.env
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -20,12 +20,12 @@ class Utility(
     }
 
     fun textToSpeech(s: String, id:String) {
-        mapTTSid[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = id;
+        mapTTSid[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = id
         tts.speak(s, TextToSpeech.QUEUE_FLUSH, mapTTSid)
     }
 
     fun textToSpeechObjectDetected(s: String, id:String) {
-        mapTTSid[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = id;
+        mapTTSid[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = id
         tts.speak(s, TextToSpeech.QUEUE_ADD, mapTTSid)
     }
 

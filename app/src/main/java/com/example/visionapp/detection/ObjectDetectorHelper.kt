@@ -1,9 +1,10 @@
-package com.example.visionapp
+package com.example.visionapp.detection
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Log
+import com.example.visionapp.MainActivity
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
