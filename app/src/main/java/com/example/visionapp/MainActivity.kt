@@ -1,7 +1,6 @@
 package com.example.visionapp
 
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
@@ -15,6 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -29,11 +29,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.visionapp.databinding.ActivityMainBinding
-import com.example.visionapp.databinding.BottomSheetDialogBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.bottom_sheet_dialog.*
 import org.tensorflow.lite.task.vision.detector.Detection
 import retrofit2.Call
 import retrofit2.Callback
@@ -47,6 +45,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var tts : TextToSpeech
+    private var isTTSObjectFinished = true
+    var onBottomSheetShow = false
+    var mapTTSid = HashMap<String, String>()
+    var ttsId = "app"
+    var ttsObjectId = "object"
+    var ttsFinishedId = "finish"
 
     private lateinit var cameraM: CameraManager
     private lateinit var camera: Camera
@@ -91,8 +95,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // init tts bahasa
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
             if (it == TextToSpeech.SUCCESS) {
-                tts.language = Locale("id", "ID")
-                tts.setSpeechRate(1.0f)
+                ttsInitialized()
             }
         })
 
@@ -104,7 +107,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // init util
         util = Utility(
             context = applicationContext,
-            tts = tts
+            tts,
+            mapTTSid
         )
 
         // before do the initialization for camera, check if device has camera first
@@ -148,6 +152,27 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
     }
 
+    private fun onObjectDetectionDistracted(){
+        // finish object detection
+        isTTSObjectFinished = true
+    }
+
+    private fun ttsInitialized(){
+        tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onDone(utteranceId: String?) {
+                if(utteranceId == ttsFinishedId) {
+                    isTTSObjectFinished = true
+                }
+            }
+
+            override fun onError(utteranceId: String?) {}
+            override fun onStart(utteranceId: String?) {}
+        })
+
+        tts.language = Locale("id", "ID")
+        tts.setSpeechRate(1.0f)
+    }
+
     private fun showPopupDenyDialog() {
         // pop up dialog on access camera deny
         // inflate the dialog
@@ -174,25 +199,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
     }
 
-    private fun modelSwitchOnClick(isChecked: Boolean) {
-        if (isChecked) {
-            // change to mode 1
-            modelInUse.value = 1
-            // text to speech
-            util.textToSpeech(Constants.SWITCH_TO_MODE_1)
-
-        } else {
-            // change to mode 0
-            modelInUse.value = 0
-            // text to speech
-            util.textToSpeech(Constants.SWITCH_TO_MODE_0)
-        }
-    }
-
-    private  fun helpOnClick(v: View?) {
-        showBottomSheetDialog()
-    }
-
     private fun showBottomSheetDialog() {
         // save value for bottom sheet opened
         val sharedPreference =  getSharedPreferences("sharedPrefs",Context.MODE_PRIVATE)
@@ -211,21 +217,45 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // on click button tutup
         bottomSheetView.findViewById<View>(R.id.btnClose).setOnClickListener{
             bottomSheetDialog.dismiss()
-            util.textToSpeech("")
+            onBottomSheetShow = false
+            util.stopSpeaking(ttsId)
         }
 
         // on click button speaker
         bottomSheetView.findViewById<View>(R.id.imgBtnSpeaker).setOnClickListener{
-            util.textToSpeech(Constants.HELP_TEXT)
+            util.textToSpeech(Constants.HELP_TEXT, ttsId)
         }
 
         bottomSheetDialog.setContentView(bottomSheetView)
         bottomSheetDialog.show()
+        onBottomSheetShow = true
+    }
+
+    private fun modelSwitchOnClick(isChecked: Boolean) {
+        onObjectDetectionDistracted()
+        if (isChecked) {
+            // change to mode 1
+            modelInUse.value = 1
+            // text to speech
+            util.textToSpeech(Constants.SWITCH_TO_MODE_1, ttsId)
+
+        } else {
+            // change to mode 0
+            modelInUse.value = 0
+            // text to speech
+            util.textToSpeech(Constants.SWITCH_TO_MODE_0, ttsId)
+        }
+    }
+
+    private  fun helpOnClick(v: View?) {
+        onObjectDetectionDistracted()
+        showBottomSheetDialog()
     }
 
     @SuppressLint("ResourceAsColor")
     @RequiresApi(Build.VERSION_CODES.M)
     private fun flashlightOnClick(v: View?) {
+        onObjectDetectionDistracted()
         val isFlashAvailable = applicationContext.packageManager
             .hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
 
@@ -260,7 +290,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 imgBtnFlash?.setBackgroundResource(R.drawable.ic_flash_on)
 
                 // text to speech
-                util.textToSpeech(Constants.FLASH_ON)
+                util.textToSpeech(Constants.FLASH_ON, ttsId)
             } else { // ACTION: TURN OFF FLASH
                 camera.cameraControl.enableTorch(false)
 
@@ -271,7 +301,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 imgBtnFlash?.setBackgroundResource(R.drawable.ic_flash_off)
 
                 // text to speech
-                util.textToSpeech(Constants.FLASH_OFF)
+                util.textToSpeech(Constants.FLASH_OFF, ttsId)
             }
         }
     }
@@ -309,7 +339,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 showBottomSheetDialog()
                 startCamera()
             }else{
-                util.textToSpeech(Constants.NO_CAMERA_ACCESS)
+                util.textToSpeech(Constants.NO_CAMERA_ACCESS, ttsId)
                 showPopupDenyDialog()
             }
         }
@@ -362,9 +392,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                             }
                             //TODO: set delay on call detect function
                             detectObjects(image)
+
                         }
                     }
-
             try {
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(
@@ -409,12 +439,18 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             imageWidth
         )
 
-        if (results != null) {
+        if (results != null && results.isNotEmpty() && isTTSObjectFinished && !onBottomSheetShow) {
+            // start speak
+            isTTSObjectFinished = false
+            // opening
+            util.textToSpeechObjectDetected("Objek terdeteksi. Ada barang", ttsId)
             for (result in results) {
                 // objek yang terdeteksi masuk queue untuk di-output sebagai speech
                 // output setelah obrolan lainnya selesai dilakukan
-                util.textToSpeechObjectDetected(result.categories[0].label)
+                util.textToSpeechObjectDetected(result.categories[0].label, ttsObjectId)
             }
+            // closing
+            util.textToSpeechObjectDetected("selesai", ttsFinishedId)
         }
 
         // Force a redraw

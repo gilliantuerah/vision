@@ -7,7 +7,8 @@ import android.widget.Toast
 
 class Utility(
     private val context: Context,
-    private var tts : TextToSpeech
+    private var tts : TextToSpeech,
+    private var mapTTSid: HashMap<String, String>,
 ) {
     fun textMessage(s: String, c: Context) {
         Toast.makeText(c, s, Toast.LENGTH_SHORT).show()
@@ -18,11 +19,17 @@ class Utility(
         return context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)
     }
 
-    fun textToSpeech(s: String) {
-        tts.speak(s, TextToSpeech.QUEUE_FLUSH, null)
+    fun textToSpeech(s: String, id:String) {
+        mapTTSid[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = id;
+        tts.speak(s, TextToSpeech.QUEUE_FLUSH, mapTTSid)
     }
 
-    fun textToSpeechObjectDetected(s: String) {
-        tts.speak(s, TextToSpeech.QUEUE_ADD, null)
+    fun textToSpeechObjectDetected(s: String, id:String) {
+        mapTTSid[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = id;
+        tts.speak(s, TextToSpeech.QUEUE_ADD, mapTTSid)
+    }
+
+    fun stopSpeaking(id:String) {
+        textToSpeech("", id)
     }
 }
