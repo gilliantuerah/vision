@@ -1,0 +1,38 @@
+Orang
+Ransel
+Payung
+Tas tangan
+Dasi
+Koper
+Botol
+Gelas
+Cangkir
+Garpu
+Pisau
+Sendok
+Mangkok
+Pisang
+Apel
+Roti lapis
+Jeruk
+Brokoli
+Wortel
+Hot dog
+Pizza
+Donat
+Kue
+Kursi
+Tanaman
+TV
+Laptop
+Mouse
+Remot
+Keyboard
+Telepon
+Buku
+Jam
+Vas
+Gunting
+Boneka
+Pengering rambut
+Sikat gigi

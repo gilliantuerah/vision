@@ -42,6 +42,7 @@ import org.tensorflow.lite.task.vision.detector.Detection
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.InputStream
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -71,6 +72,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         MODEL_2 -> Constants.MODEL_2
         else -> Constants.MODEL_1
     }
+    private val labelsYoloV5 = mutableListOf<String>()
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
@@ -105,10 +107,18 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             }
         })
 
+        // yolo labels
+        val labelsInput: InputStream = assets.open(Constants.YOLO_LABELS)
+        labelsInput.bufferedReader().forEachLine {
+            labelsYoloV5.add(it)
+        }
+
         // init object detector helper
         objectDetectorHelper = ObjectDetectorHelper(
             context = applicationContext,
-            objectDetectorListener = this)
+            objectDetectorListener = this,
+            labels = labelsYoloV5,
+            inputSize = 640)
 
         // init util
         util = Utility(
@@ -396,9 +406,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                                     Bitmap.Config.ARGB_8888
                                 )
                             }
-                            //TODO: set delay on call detect function
                             detectObjects(image)
-
                         }
                     }
             try {
@@ -422,7 +430,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName)
+//        objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName)
+        Log.d(Constants.TAG, "hi")
+        Log.d(Constants.TAG, objectDetectorHelper.recognizeImage(bitmapBuffer).toString())
     }
 
     override fun onError(error: String) {
