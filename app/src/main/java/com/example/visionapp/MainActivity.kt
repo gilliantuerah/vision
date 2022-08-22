@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +19,7 @@ import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.CompoundButton
 import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -42,6 +44,9 @@ import org.tensorflow.lite.task.vision.detector.Detection
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -71,6 +76,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         MODEL_2 -> Constants.MODEL_2
         else -> Constants.MODEL_1
     }
+
+    // default offline, using mode 1
+    private var isOnline: Boolean = false
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
@@ -240,10 +248,18 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private fun modelSwitchOnClick(isChecked: Boolean) {
         onObjectDetectionDistracted()
         if (isChecked) {
-            // change to mode 1
-            modelInUse.value = 1
-            // text to speech
-            util.textToSpeech(Constants.SWITCH_TO_MODE_1, ttsId)
+            if(isOnline) {
+                // if mobile has internet connectivity
+                // change to mode 1
+                modelInUse.value = 1
+                // text to speech
+                util.textToSpeech(Constants.SWITCH_TO_MODE_1, ttsId)
+            } else {
+                // if mobile offline
+                // -> model ga diganti
+                // -> switch tetep diem
+                switchModel.isChecked = false;
+            }
 
         } else {
             // change to mode 0
@@ -310,6 +326,26 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 util.textToSpeech(Constants.FLASH_OFF, ttsId)
             }
         }
+    }
+
+    private fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null
+    }
+
+    fun hasActiveInternetConnetion(context: Context): Boolean {
+        var success = false
+        try {
+            val url = URL("https://google.com")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.connectTimeout = 10000
+            connection.connect()
+            success = connection.responseCode == 200
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return success
     }
 
     private fun checkCameraAccess() {
@@ -396,7 +432,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                                     Bitmap.Config.ARGB_8888
                                 )
                             }
-                            //TODO: set delay on call detect function
+                            // check internet connection
+                            isOnline = hasActiveInternetConnetion(this)
+
+                            // TODO: case klo tiba2 offline, dan lagi pake mode 2 -> auto switch ke mode 1
+                            Log.d("hlo", isOnline.toString())
+
                             detectObjects(image)
 
                         }
