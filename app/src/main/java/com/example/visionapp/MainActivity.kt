@@ -508,19 +508,15 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     // TODO: ganti pake API beneran (Api, PostResponse, RetrofitClient)
     private fun getPostsDummy() {
         // retrofit
-        RetrofitClient.instance.getPosts().enqueue(object: Callback<ArrayList<PostResponse>>{
-            override fun onResponse(
-                call: Call<ArrayList<PostResponse>>,
-                response: Response<ArrayList<PostResponse>>
-            ) {
+        RetrofitClient.instance.getModelById("62f9a70aee91d8d9181fdf98").enqueue(object: Callback<String>{
+            override fun onResponse(call: Call<String>, response: Response<String>) {
                 val responseCode = response.code().toString()
                 Log.d(Constants.TAG, "response code$responseCode")
 
-                response.body()?.let { list.addAll(it)}
-                Log.d(Constants.TAG, list.toString())
+                Log.d(Constants.TAG, response.body().toString())
             }
 
-            override fun onFailure(call: Call<ArrayList<PostResponse>>, t: Throwable) {
+            override fun onFailure(call: Call<String>, t: Throwable) {
                 Log.e("Failed", t.message.toString())
             }
         })
