@@ -27,10 +27,11 @@
             android:text="Panduan Penggunaan"
             android:gravity="center"
             android:textStyle="bold"
-            android:textSize="16sp"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
             android:textColor="@color/black"
+            android:fontFamily="@font/aphont_bold"
+            android:textSize="@dimen/font_size_large"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <View
@@ -45,6 +46,8 @@
         android:text="Arahkan handphone ke arah barang yang ingin Anda deteksi. Pembacaan hasil deteksi akan dilakukan setiap 5 detik. Barang akan dideteksi secara terurut dari bagian kiri atas ke kanan bawah. \n\nTekan tombol di kiri bawah untuk bantuan. Tekan tombol di kanan bawah untuk mengubah mode. Tekan tombol di tengah untuk mematikan lampu flash."
         android:gravity="left"
         android:textColor="@color/black"
+        android:fontFamily="@font/aphont_regular"
+        android:textSize="@dimen/font_size_medium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
     <LinearLayout
@@ -77,8 +80,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="4"
+            android:fontFamily="@font/aphont_regular"
             android:contentDescription="Tutup halaman bantuan"
-            android:textAllCaps="false"/>
+            android:textAllCaps="false"
+            android:textSize="@dimen/font_size_medium"/>
     </LinearLayout>
 
 </LinearLayout>

@@ -23,6 +23,7 @@
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
         android:textColor="@color/black"
+        android:textSize="@dimen/font_size_medium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
@@ -42,6 +43,7 @@
             android:layout_height="35dp"
             android:background="@drawable/shape_blue_solid"
             android:text="Beri Akses"
+            android:textSize="@dimen/font_size_medium"
             android:textAllCaps="false"
             android:textColor="@color/white" />
 
@@ -51,6 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAllCaps="false"
+            android:textSize="@dimen/font_size_small"
             android:background="@android:color/transparent"
             android:textColor="@color/grey"/>
 
