@@ -37,7 +37,7 @@
             android:gravity="center"
             android:layout_weight="1"
             android:src="@drawable/ic_help"
-            android:contentDescription="tombol bantuan"
+            android:contentDescription="bantuan"
             android:backgroundTint="@color/black"
             app:tint="@color/white" />
 
@@ -48,7 +48,7 @@
             android:gravity="center"
             android:layout_weight="1"
             android:background="@drawable/ic_flash_off"
-            android:contentDescription="tombol flash" />
+            android:contentDescription="flash" />
 
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -66,7 +66,7 @@
                 android:scaleY="1.5"
                 android:thumb="@drawable/thumb_selector"
                 android:track="@drawable/track_selector"
-                android:contentDescription="tombol ubah mode" />
+                android:contentDescription="ubah mode" />
         </RelativeLayout>
 
     </LinearLayout>

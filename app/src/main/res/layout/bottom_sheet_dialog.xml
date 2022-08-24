@@ -71,7 +71,7 @@
             android:layout_weight="1"
             android:src="@drawable/ic_speaker"
             android:background="@drawable/shape_blue_solid"
-            android:contentDescription="tombol suara"/>
+            android:contentDescription="suara"/>
         <Button
             android:id="@+id/btnClose"
             android:text="Tutup"
@@ -81,7 +81,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="4"
             android:fontFamily="@font/aphont_regular"
-            android:contentDescription="Tutup halaman bantuan"
             android:textAllCaps="false"
             android:textSize="@dimen/font_size_medium"/>
     </LinearLayout>
