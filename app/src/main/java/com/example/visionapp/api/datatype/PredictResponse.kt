@@ -1,4 +1,4 @@
-package com.example.visionapp.api
+package com.example.visionapp.api.datatype
 
 import java.util.ArrayList
 import kotlin.Annotation

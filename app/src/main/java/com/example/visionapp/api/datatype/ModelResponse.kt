@@ -1,4 +1,4 @@
-package com.example.visionapp.api
+package com.example.visionapp.api.datatype
 
 data class ModelResponse(
     val status: Int,

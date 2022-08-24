@@ -1,28 +1,24 @@
 package com.example.visionapp.api
 
-import android.graphics.Bitmap
-import androidx.camera.core.ImageProxy
-import okhttp3.ResponseBody
+import com.example.visionapp.api.datatype.ModelResponse
+import com.example.visionapp.api.datatype.PostPredictionReq
+import com.example.visionapp.api.datatype.PredictImageReq
+import com.example.visionapp.api.datatype.PredictResponse
 import retrofit2.Call
 import retrofit2.http.*
-import java.io.File
-import java.util.*
+
 
 interface Api {
     @GET("api/ml")
     fun getModel(): Call<ModelResponse>
 
-    @FormUrlEncoded
     @POST("api/ml/predict")
     fun predictImageServer(
-        @Field("image") image: Bitmap?,
-        @Field("model") model: String
+        @Body predictRequest: PredictImageReq
     ): Call<PredictResponse>
 
-    @FormUrlEncoded
     @POST("api/objects")
     fun postPrediction(
-        @Field("annotations") annotations: ArrayList<Annotation>,
-        @Field("file") file: Bitmap
+        @Body postPreidctReq: PostPredictionReq
     ): Call<String>
 }

@@ -1,6 +1,5 @@
 package com.example.visionapp
 
-import android.R.attr
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
@@ -10,14 +9,12 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
-import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +29,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.visionapp.api.*
+import com.example.visionapp.api.datatype.ModelResponse
 import com.example.visionapp.databinding.ActivityMainBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
 import com.example.visionapp.detection.ObjectDetectorHelper
@@ -40,10 +38,6 @@ import com.example.visionapp.env.Utility
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
 import org.tensorflow.lite.task.vision.detector.Detection
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -394,9 +388,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             // ImageAnalysis. Using RGBA 8888 to match how our models work
             imageAnalyzer =
                 ImageAnalysis.Builder()
-                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+//                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
 //                    .setTargetRotation(viewFinder?.display.rotation)
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+//                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .setOutputImageFormat(OUTPUT_IMAGE_FORMAT_RGBA_8888)
                     .build()
                     // The analyzer can then be assigned to the instance
@@ -436,13 +430,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun BitMapToString(bitmap: Bitmap): String {
-        val baos = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-        val b = baos.toByteArray()
-        return Base64.encodeToString(b, Base64.DEFAULT)
-    }
-
     private fun detectObjects(image: ImageProxy) {
         // Copy out RGB bits to the shared bitmap buffer
         image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
@@ -450,6 +437,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
         objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName)
+        if(isOnline) {
+            serviceApi.predictOnServer(bitmapBuffer, "MobileNet")
+        }
     }
 
     override fun onError(error: String) {
