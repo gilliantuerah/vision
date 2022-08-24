@@ -3,6 +3,6 @@ package com.example.visionapp.api
 import android.graphics.RectF
 
 data class Annotation(
-    val coordinates: ArrayList<RectF?>,
+    val box: ArrayList<Float>,
     val label: String
 )

@@ -1,31 +1,21 @@
 package com.example.visionapp.api
 
 import android.graphics.Bitmap
+import androidx.camera.core.ImageProxy
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
+import java.io.File
 import java.util.*
 
 interface Api {
-    // TODO: adjust to GET API PADIL
-//    @GET("posts")
-//    fun getPosts(): Call<ArrayList<PostResponse>>
-
-    @GET("api/ml/{id}")
-    fun getModelById(@Path("id") id: String): Call<String>
-
-    // TODO: adjust to POST API PADIL
-//    @FormUrlEncoded
-//    @POST("posts")
-//    fun createPosts(
-//        @Field("userId") userId: Int,
-//        @Field("title") title: String,
-//        @Field("body") body: String
-//    ): Call<CreatePostResponse>
+    @GET("api/ml")
+    fun getModel(): Call<ModelResponse>
 
     @FormUrlEncoded
     @POST("api/ml/predict")
     fun predictImageServer(
-        @Field("image") image: Bitmap,
+        @Field("image") image: Bitmap?,
         @Field("model") model: String
     ): Call<PredictResponse>
 

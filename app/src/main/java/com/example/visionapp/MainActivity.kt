@@ -1,5 +1,6 @@
 package com.example.visionapp
 
+import android.R.attr
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
@@ -16,10 +17,10 @@ import android.os.Bundle
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.CompoundButton
 import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -30,9 +31,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.example.visionapp.api.CreatePostResponse
-import com.example.visionapp.api.PostResponse
-import com.example.visionapp.api.RetrofitClient
+import com.example.visionapp.api.*
 import com.example.visionapp.databinding.ActivityMainBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
 import com.example.visionapp.detection.ObjectDetectorHelper
@@ -41,9 +40,7 @@ import com.example.visionapp.env.Utility
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
 import org.tensorflow.lite.task.vision.detector.Detection
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -86,10 +83,11 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var objectDetectorHelper: ObjectDetectorHelper
 
     private lateinit var util: Utility
+    private lateinit var serviceApi: Service
     private var alertDialog: Dialog? = null
 
     // TODO: data dummy for testing retrofit
-    private val list = ArrayList<PostResponse>()
+    private val list = ArrayList<ModelResponse>()
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,6 +115,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         objectDetectorHelper = ObjectDetectorHelper(
             context = applicationContext,
             objectDetectorListener = this)
+
+        // init service api
+        serviceApi = Service()
 
         // init util
         util = Utility(
@@ -151,10 +152,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
 
         // TODO: change with real func with GET padul later
-        getPostsDummy()
+        serviceApi.getModel()
 
-        // TODO: change with real func with POST padul later
-        createPostsDummy()
     }
 
     override fun onStop() {
@@ -328,26 +327,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
     }
 
-    private fun isNetworkAvailable(context: Context): Boolean {
-        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworkInfo = connectivityManager.activeNetworkInfo
-        return activeNetworkInfo != null
-    }
-
-    fun hasActiveInternetConnetion(context: Context): Boolean {
-        var success = false
-        try {
-            val url = URL("https://google.com")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.connectTimeout = 10000
-            connection.connect()
-            success = connection.responseCode == 200
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return success
-    }
-
     private fun checkCameraAccess() {
         if(allPermissionGranted()){
             startCamera()
@@ -433,7 +412,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                                 )
                             }
                             // check internet connection
-                            isOnline = hasActiveInternetConnetion(this)
+                            isOnline = util.hasActiveInternetConnetion(this)
 
                             // TODO: case klo tiba2 offline, dan lagi pake mode 2 -> auto switch ke mode 1
                             Log.d("hlo", isOnline.toString())
@@ -455,6 +434,13 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 Log.d(Constants.TAG, "startCamera Fail:", e)
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun BitMapToString(bitmap: Bitmap): String {
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+        val b = baos.toByteArray()
+        return Base64.encodeToString(b, Base64.DEFAULT)
     }
 
     private fun detectObjects(image: ImageProxy) {
@@ -503,48 +489,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // Force a redraw
         overlay?.invalidate()
 
-    }
-
-    // TODO: ganti pake API beneran (Api, PostResponse, RetrofitClient)
-    private fun getPostsDummy() {
-        // retrofit
-        RetrofitClient.instance.getModelById("62f9a70aee91d8d9181fdf98").enqueue(object: Callback<String>{
-            override fun onResponse(call: Call<String>, response: Response<String>) {
-                val responseCode = response.code().toString()
-                Log.d(Constants.TAG, "response code$responseCode")
-
-                Log.d(Constants.TAG, response.body().toString())
-            }
-
-            override fun onFailure(call: Call<String>, t: Throwable) {
-                Log.e("Failed", t.message.toString())
-            }
-        })
-    }
-
-    // TODO: ganti pake API beneran (Api, CreatePostResponse, RetrofitClient)
-    private fun createPostsDummy() {
-        RetrofitClient.instance.createPosts(
-            10,
-            "judul apa hayo",
-            "apa coba isinya apa coba apa coba"
-        ).enqueue(object: Callback<CreatePostResponse>{
-            override fun onResponse(
-                call: Call<CreatePostResponse>,
-                response: Response<CreatePostResponse>
-            ) {
-                val responseCode = response.code().toString()
-                Log.d(Constants.TAG, "response code$responseCode")
-
-                val response = "response $response"
-                Log.d(Constants.TAG, response)
-            }
-
-            override fun onFailure(call: Call<CreatePostResponse>, t: Throwable) {
-                Log.e("Failed", t.message.toString())
-            }
-
-        })
     }
 
     companion object {

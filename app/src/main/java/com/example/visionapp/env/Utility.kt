@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 
 class Utility(
     private val context: Context,
@@ -31,5 +34,19 @@ class Utility(
 
     fun stopSpeaking(id:String) {
         textToSpeech("", id)
+    }
+
+    fun hasActiveInternetConnetion(context: Context): Boolean {
+        var success = false
+        try {
+            val url = URL("https://google.com")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.connectTimeout = 10000
+            connection.connect()
+            success = connection.responseCode == 200
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return success
     }
 }
