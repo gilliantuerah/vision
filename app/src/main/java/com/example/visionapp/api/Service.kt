@@ -10,10 +10,14 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class Service {
-    fun getLastModel() {
+    fun getLastModel(): String? {
+        // return file path of model from server
+        var modelFile: String? = null
+
         // retrofit
         RetrofitClient.instance.getModel(true).enqueue(object: Callback<ModelResponse> {
             override fun onResponse(call: Call<ModelResponse>, response: Response<ModelResponse>) {
@@ -23,17 +27,16 @@ class Service {
                 val responseBody = response.body()
                 Log.d("getlastmodel", responseBody.toString())
 
-                val modelFile = responseBody?.data?.file_path
-                if (modelFile != null) {
-                    // if model exist
-                    Log.d("getlastmodel", modelFile)
-                }
+                modelFile = responseBody?.data?.file_path
+
             }
 
             override fun onFailure(call: Call<ModelResponse>, t: Throwable) {
                 Log.e("Failed", t.message.toString())
             }
         })
+
+        return modelFile
     }
 
     private fun bitMapToString(bitmap: Bitmap?): String {
@@ -43,9 +46,10 @@ class Service {
         return Base64.encodeToString(b, Base64.DEFAULT)
     }
 
-    fun predictOnServer(image: Bitmap, modelName: String) {
+    fun predictOnServer(image: Bitmap, modelName: String): ArrayList<ResultAnnotation>? {
         val fileBase64 = bitMapToString(image)
         val body = PredictImageReq(fileBase64, modelName)
+        var result: ArrayList<ResultAnnotation>? = ArrayList()
 
         RetrofitClient.instance.predictImageServer(body).enqueue(object: Callback<PredictImageResponse> {
             override fun onResponse(
@@ -58,15 +62,14 @@ class Service {
                 val responseBody = response.body()
                 Log.d(Constants.TAG, responseBody.toString())
 
-                val result = responseBody?.data
-
-                Log.d("prediksi", result.toString())
+                result = responseBody?.data
             }
 
             override fun onFailure(call: Call<PredictImageResponse>, t: Throwable) {
                 Log.e("Failed", t.message.toString())
             }
         })
+        return result
     }
 
     fun postPredictionResult(image: Bitmap, result: ArrayList<ResultAnnotation>) {

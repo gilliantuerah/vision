@@ -72,6 +72,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     // default offline, using mode 1
     private var isOnline: Boolean = false
 
+    // path model yoloV5 from server
+    private var modelFromServer: String? = null
+
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private lateinit var bitmapBuffer: Bitmap
@@ -98,6 +101,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 else -> Constants.MODEL_1
             }
         })
+
+        // check internet connection
+        isOnline = util.hasActiveInternetConnetion(this)
 
         // init tts bahasa
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
@@ -146,8 +152,10 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             modelSwitchOnClick(isChecked)
         }
 
-        // TODO: change with real func with GET padul later
-        serviceApi.getLastModel()
+        if(isOnline) {
+            // get model from server if device is online
+            modelFromServer = serviceApi.getLastModel()
+        }
 
     }
 
@@ -438,8 +446,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
         objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName)
-        if(isOnline) {
-            serviceApi.predictOnServer(bitmapBuffer, "MobileNet")
+        if(modelInUse.value == 1) {
+            // if mode 2 in use, predict image from server
+            val result = serviceApi.predictOnServer(bitmapBuffer, "MobileNet")
+
+            // TODO: draw result in overlay
+            Log.d("Hasil prediksi server", result.toString())
         }
     }
 
@@ -488,7 +500,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 util.textToSpeechObjectDetected(label, ttsObjectId)
             }
 
-            serviceApi.postPredictionResult(image, arrayResult)
+            if (isOnline) {
+                // if device is online, post prediction result to server
+                // TODO: convert image of rectf to pascal voc format
+                serviceApi.postPredictionResult(image, arrayResult)
+            }
+
             // closing
             util.textToSpeechObjectDetected(Constants.CLOSE_DETECTION, ttsFinishedId)
         }
