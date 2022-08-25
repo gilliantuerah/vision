@@ -13,31 +13,20 @@ import java.util.*
 
 
 class Service {
-    private fun getModelByName(modelName: String, responseData: ArrayList<ModelData>) : String? {
-        responseData.forEach {
-            // check if model exist in array
-            if(it.name == modelName) {
-                return it.file_path
-            }
-        }
-
-        return null
-    }
-
-    fun getModel() {
+    fun getLastModel() {
         // retrofit
-        RetrofitClient.instance.getModel().enqueue(object: Callback<ModelResponse> {
+        RetrofitClient.instance.getModel(true).enqueue(object: Callback<ModelResponse> {
             override fun onResponse(call: Call<ModelResponse>, response: Response<ModelResponse>) {
                 val responseCode = response.code().toString()
                 Log.d(Constants.TAG, "response code$responseCode")
 
                 val responseBody = response.body()
-                Log.d(Constants.TAG, responseBody.toString())
+                Log.d("getlastmodel", responseBody.toString())
 
-                val modelFile = responseBody?.data?.let { getModelByName("MobileNet", it) }
+                val modelFile = responseBody?.data?.file_path
                 if (modelFile != null) {
                     // if model exist
-                    Log.d(Constants.TAG, modelFile)
+                    Log.d("getlastmodel", modelFile)
                 }
             }
 
@@ -49,7 +38,7 @@ class Service {
 
     private fun bitMapToString(bitmap: Bitmap?): String {
         val baos = ByteArrayOutputStream()
-        bitmap?.compress(Bitmap.CompressFormat.JPEG, 0, baos)
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, baos)
         val b = baos.toByteArray()
         return Base64.encodeToString(b, Base64.DEFAULT)
     }
@@ -58,25 +47,29 @@ class Service {
         val fileBase64 = bitMapToString(image)
         val body = PredictImageReq(fileBase64, modelName)
 
-        RetrofitClient.instance.predictImageServer(body).enqueue(object: Callback<PredictResponse> {
+        RetrofitClient.instance.predictImageServer(body).enqueue(object: Callback<PredictImageResponse> {
             override fun onResponse(
-                call: Call<PredictResponse>,
-                response: Response<PredictResponse>
+                call: Call<PredictImageResponse>,
+                response: Response<PredictImageResponse>
             ) {
                 val responseCode = response.code().toString()
                 Log.d(Constants.TAG, "response code$responseCode")
 
-                val response = "response $response"
-                Log.d(Constants.TAG, response)
+                val responseBody = response.body()
+                Log.d(Constants.TAG, responseBody.toString())
+
+                val result = responseBody?.data
+
+                Log.d("prediksi", result.toString())
             }
 
-            override fun onFailure(call: Call<PredictResponse>, t: Throwable) {
+            override fun onFailure(call: Call<PredictImageResponse>, t: Throwable) {
                 Log.e("Failed", t.message.toString())
             }
         })
     }
 
-    fun postPredictionResult(image: Bitmap, result: ArrayList<Annotation>) {
+    fun postPredictionResult(image: Bitmap, result: ArrayList<ResultAnnotation>) {
         val fileBase64 = bitMapToString(image)
         val body = PostPredictionReq(fileBase64, result)
 

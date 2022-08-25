@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
 
         // TODO: change with real func with GET padul later
-        serviceApi.getModel()
+        serviceApi.getLastModel()
 
     }
 

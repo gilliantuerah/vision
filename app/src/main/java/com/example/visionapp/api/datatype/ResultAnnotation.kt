@@ -1,8 +1,6 @@
 package com.example.visionapp.api.datatype
 
-import android.graphics.RectF
-
-data class Annotation(
+data class ResultAnnotation(
     val box: ArrayList<Float>,
     val label: String
 )
