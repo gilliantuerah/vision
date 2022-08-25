@@ -73,19 +73,19 @@ class Service {
         val fileBase64 = bitMapToString(image)
         val body = PostPredictionReq(fileBase64, result)
 
-        RetrofitClient.instance.postPrediction(body).enqueue(object: Callback<String> {
+        RetrofitClient.instance.postPrediction(body).enqueue(object: Callback<PostPredictionResponse> {
             override fun onResponse(
-                call: Call<String>,
-                response: Response<String>
+                call: Call<PostPredictionResponse>,
+                response: Response<PostPredictionResponse>
             ) {
                 val responseCode = response.code().toString()
-                Log.d(Constants.TAG, "response code$responseCode")
+                Log.d("postpredict", "response code$responseCode")
 
-                val response = "response $response"
-                Log.d(Constants.TAG, response)
+                val responseBody = response.body()
+                Log.d("postpredict", responseBody.toString())
             }
 
-            override fun onFailure(call: Call<String>, t: Throwable) {
+            override fun onFailure(call: Call<PostPredictionResponse>, t: Throwable) {
                 Log.e("Failed", t.message.toString())
             }
         })

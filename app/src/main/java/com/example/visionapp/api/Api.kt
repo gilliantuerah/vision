@@ -1,9 +1,6 @@
 package com.example.visionapp.api
 
-import com.example.visionapp.api.datatype.ModelResponse
-import com.example.visionapp.api.datatype.PostPredictionReq
-import com.example.visionapp.api.datatype.PredictImageReq
-import com.example.visionapp.api.datatype.PredictImageResponse
+import com.example.visionapp.api.datatype.*
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -22,5 +19,5 @@ interface Api {
     @POST("api/objects/")
     fun postPrediction(
         @Body postPreidctReq: PostPredictionReq
-    ): Call<String>
+    ): Call<PostPredictionResponse>
 }

@@ -104,6 +104,7 @@ class ObjectDetectorHelper(
         inferenceTime = SystemClock.uptimeMillis() - inferenceTime
         objectDetectorListener?.onResults(
             results,
+            image,
             inferenceTime,
             tensorImage.height,
             tensorImage.width)
@@ -113,6 +114,7 @@ class ObjectDetectorHelper(
         fun onError(error: String)
         fun onResults(
             results: MutableList<Detection>?,
+            image: Bitmap,
             inferenceTime: Long,
             imageHeight: Int,
             imageWidth: Int

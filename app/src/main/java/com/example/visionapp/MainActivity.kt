@@ -30,6 +30,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.visionapp.api.*
 import com.example.visionapp.api.datatype.ModelResponse
+import com.example.visionapp.api.datatype.ResultAnnotation
 import com.example.visionapp.databinding.ActivityMainBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
 import com.example.visionapp.detection.ObjectDetectorHelper
@@ -450,6 +451,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
     override fun onResults(
         results: MutableList<Detection>?,
+        image: Bitmap,
         inferenceTime: Long,
         imageHeight: Int,
         imageWidth: Int
@@ -467,11 +469,26 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             isTTSObjectFinished = false
             // opening
             util.textToSpeechObjectDetected(Constants.OPEN_DETECTION, ttsId)
+
+            // array for post to server
+            var arrayResult: ArrayList<ResultAnnotation> = ArrayList<ResultAnnotation>()
             for (result in results) {
+
+                val label = result.categories[0].label
+                val box = result.boundingBox
+
+                val boxArray = arrayListOf(box.left, box.top, box.right, box.bottom)
+
+                arrayResult.add(ResultAnnotation(
+                    boxArray,
+                    label
+                ))
                 // objek yang terdeteksi masuk queue untuk di-output sebagai speech
                 // output setelah obrolan lainnya selesai dilakukan
-                util.textToSpeechObjectDetected(result.categories[0].label, ttsObjectId)
+                util.textToSpeechObjectDetected(label, ttsObjectId)
             }
+
+            serviceApi.postPredictionResult(image, arrayResult)
             // closing
             util.textToSpeechObjectDetected(Constants.CLOSE_DETECTION, ttsFinishedId)
         }
