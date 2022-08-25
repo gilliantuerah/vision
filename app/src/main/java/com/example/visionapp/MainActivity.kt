@@ -33,11 +33,13 @@ import com.example.visionapp.api.datatype.ModelResponse
 import com.example.visionapp.api.datatype.ResultAnnotation
 import com.example.visionapp.databinding.ActivityMainBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
+import com.example.visionapp.databinding.TncDialogBinding
 import com.example.visionapp.detection.ObjectDetectorHelper
 import com.example.visionapp.env.Constants
 import com.example.visionapp.env.Utility
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.bottom_sheet_dialog.*
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -49,7 +51,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
     private lateinit var tts : TextToSpeech
     private var isTTSObjectFinished = true
-    var onBottomSheetShow = false
+    var tncAccepted = false
     var mapTTSid = HashMap<String, String>()
     var ttsId = "app"
     var ttsObjectId = "object"
@@ -82,10 +84,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
     private lateinit var util: Utility
     private lateinit var serviceApi: Service
-    private var alertDialog: Dialog? = null
-
-    // TODO: data dummy for testing retrofit
-    private val list = ArrayList<ModelResponse>()
+    private var alertDialogDeny: Dialog? = null
+    private var alertDialogTnc: Dialog? = null
+    private var bottomSheetDialog: BottomSheetDialog? = null
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,9 +102,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 else -> Constants.MODEL_1
             }
         })
-
-        // check internet connection
-        isOnline = util.hasActiveInternetConnetion(this)
 
         // init tts bahasa
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
@@ -151,12 +149,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         switchModel?.setOnCheckedChangeListener{ _, isChecked ->
             modelSwitchOnClick(isChecked)
         }
-
-        if(isOnline) {
-            // get model from server if device is online
-            modelFromServer = serviceApi.getLastModel()
-        }
-
     }
 
     override fun onStop() {
@@ -197,7 +189,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         val alertDialogBuilder = AlertDialog.Builder(this)
             .setView(denyCameraDialog.root)
         // show dialog
-        alertDialog = alertDialogBuilder.show()
+        alertDialogDeny = alertDialogBuilder.show()
         // on click button setup
         denyCameraDialog.btnAccess.setOnClickListener{
             // go to setting
@@ -215,6 +207,26 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
     }
 
+    private fun showTncDialog() {
+        // pop up dialog tnc
+        // inflate the dialog
+        val tncDialog = TncDialogBinding.inflate(layoutInflater)
+        // alert dialog builder
+        val alertDialogBuilder = AlertDialog.Builder(this)
+            .setView(tncDialog.root)
+        // show dialog
+        alertDialogTnc = alertDialogBuilder.show()
+        // on click button setup
+        tncDialog.btnSetuju.setOnClickListener{
+            // close dialog
+            alertDialogTnc?.dismiss()
+            // set var
+            tncAccepted = true
+            // open bottomsheet
+            showBottomSheetDialog()
+        }
+    }
+
     private fun showBottomSheetDialog() {
         // save value for bottom sheet opened
         val sharedPreference =  getSharedPreferences("sharedPrefs",Context.MODE_PRIVATE)
@@ -224,7 +236,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }.apply()
 
         // bottom sheet dialog
-        val bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+        bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         val bottomSheetView = LayoutInflater.from(applicationContext).inflate(
             R.layout.bottom_sheet_dialog,
             findViewById<LinearLayout>(R.id.bottomSheet)
@@ -232,8 +244,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         // on click button tutup
         bottomSheetView.findViewById<View>(R.id.btnClose).setOnClickListener{
-            bottomSheetDialog.dismiss()
-            onBottomSheetShow = false
+            bottomSheetDialog?.dismiss()
             util.stopSpeaking(ttsId)
         }
 
@@ -242,9 +253,15 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             util.textToSpeech(Constants.HELP_TEXT, ttsId)
         }
 
-        bottomSheetDialog.setContentView(bottomSheetView)
-        bottomSheetDialog.show()
-        onBottomSheetShow = true
+        bottomSheetDialog?.setContentView(bottomSheetView)
+        bottomSheetDialog?.show()
+    }
+
+    private fun isBottomSheetShowing(): Boolean{
+        if(bottomSheetDialog?.isShowing == true){
+            return true
+        }
+        return false
     }
 
     private fun modelSwitchOnClick(isChecked: Boolean) {
@@ -330,6 +347,19 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
     }
 
+    private fun onAccessGranted(){
+        // on access camera granted
+        // close deny dialog (if still open)
+        // open tnc dialog
+        // then open bottom sheet dialog
+        if(alertDialogDeny?.isShowing == true) {
+            alertDialogDeny?.dismiss()
+        }
+        if(!tncAccepted) {
+            showTncDialog()
+        }
+    }
+
     private fun checkCameraAccess() {
         if(allPermissionGranted()){
             startCamera()
@@ -338,7 +368,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             val showFirstBottomSheet = sharedPreference.getBoolean("showFirstBottomSheet", false)
             // if bottom sheet never show
             if(!showFirstBottomSheet){
-                showBottomSheetDialog()
+                onAccessGranted()
             }
         }else{
             ActivityCompat.requestPermissions(
@@ -357,10 +387,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == Constants.REQUEST_CODE_PERMISSIONS){
             if(allPermissionGranted()){
-                if(alertDialog?.isShowing == true) {
-                    alertDialog?.dismiss()
-                }
-                showBottomSheetDialog()
+                onAccessGranted()
                 startCamera()
             }else{
                 util.textToSpeech(Constants.NO_CAMERA_ACCESS, ttsId)
@@ -417,6 +444,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                             // check internet connection
                             isOnline = util.hasActiveInternetConnetion(this)
 
+                            if(isOnline && modelFromServer == null){
+                                // get model from server if device is online
+                                // and not get model from server yet
+                                modelFromServer = serviceApi.getLastModel()
+                            }
+
                             // TODO: case klo tiba2 offline, dan lagi pake mode 2 -> auto switch ke mode 1
                             Log.d("hlo", isOnline.toString())
 
@@ -455,6 +488,16 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
     }
 
+    private fun speakDetectionResult(): Boolean{
+        // true if output suara untuk hasil deteksi diperbolehkan
+        // false jika tidak (ada popup/bottom sheet)
+
+        // if pembacaan sebelumnya sudah selesai
+        // if bottom sheet not showing
+        // if popup tnc not showing
+        return isTTSObjectFinished && !isBottomSheetShowing() && tncAccepted
+    }
+
     override fun onError(error: String) {
         // show error on toast
         // TODO: consider to tell error via tts
@@ -476,7 +519,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             imageWidth
         )
 
-        if (results != null && results.isNotEmpty() && isTTSObjectFinished && !onBottomSheetShow) {
+        if (results != null && results.isNotEmpty() && speakDetectionResult()) {
             // start speak
             isTTSObjectFinished = false
             // opening
