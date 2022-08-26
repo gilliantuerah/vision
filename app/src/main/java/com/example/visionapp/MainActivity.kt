@@ -479,7 +479,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         }
     }
 
-    private fun speakDetectionResult(): Boolean{
+    private fun isSpeakResultAllowed(): Boolean{
         // true if output suara untuk hasil deteksi diperbolehkan
         // false jika tidak (ada popup/bottom sheet)
 
@@ -499,21 +499,23 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         util.textMessage(error, this)
     }
 
-    override fun onResults(
+    override fun onResultsModeOffline(
         results: MutableList<Detection>?,
         image: Bitmap,
         imageHeight: Int,
         imageWidth: Int
     ) {
-
         // Pass necessary information to OverlayView for drawing on the canvas
-        overlay?.setResults(
-            results ?: LinkedList<Detection>(),
-            imageHeight,
-            imageWidth
-        )
+        modelInUse.value?.let {
+            overlay?.setResultsOffline(
+                results ?: LinkedList<Detection>(),
+                it,
+                imageHeight,
+                imageWidth
+            )
+        }
 
-        if (results != null && results.isNotEmpty() && speakDetectionResult()) {
+        if (results != null && results.isNotEmpty() && isSpeakResultAllowed()) {
             // start speak
             isTTSObjectFinished = false
             // opening
@@ -550,6 +552,45 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // Force a redraw
         overlay?.invalidate()
 
+    }
+
+    override fun onResultsModeOnline(
+        results: ArrayList<ResultAnnotation>?,
+        image: Bitmap
+    ){
+        // Pass necessary information to OverlayView for drawing on the canvas
+        modelInUse.value?.let {
+            if (results != null) {
+                overlay?.setResultsOnline(
+                    results,
+                    it,
+                    image.height,
+                    image.width
+                )
+            }
+        }
+        Log.d("Hasil prediksi server", results.toString())
+
+        if (results != null && results.isNotEmpty() && isSpeakResultAllowed()) {
+            // start speak
+            isTTSObjectFinished = false
+            // opening
+            util.textToSpeechObjectDetected(Constants.OPEN_DETECTION, ttsId)
+
+            for (result in results) {
+                val label = result.label
+
+                // objek yang terdeteksi masuk queue untuk di-output sebagai speech
+                // output setelah obrolan lainnya selesai dilakukan
+                util.textToSpeechObjectDetected(label, ttsObjectId)
+            }
+
+            // closing
+            util.textToSpeechObjectDetected(Constants.CLOSE_DETECTION, ttsFinishedId)
+        }
+
+        // Force a redraw
+        overlay?.invalidate()
     }
 
     companion object {

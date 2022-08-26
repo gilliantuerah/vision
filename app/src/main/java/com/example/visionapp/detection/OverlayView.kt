@@ -26,13 +26,19 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.visionapp.R
+import com.example.visionapp.api.datatype.ResultAnnotation
 import java.util.LinkedList
 import kotlin.math.max
 import org.tensorflow.lite.task.vision.detector.Detection
 
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
-    private var results: List<Detection> = LinkedList<Detection>()
+    private var resultsOffline: List<Detection> = LinkedList<Detection>()
+    private var resultsOnline: ArrayList<ResultAnnotation> = ArrayList<ResultAnnotation>()
+
+    // default mode offline
+    private var modelInUse: Int = 0
+
     private var boxPaint = Paint()
     private var textBackgroundPaint = Paint()
     private var textPaint = Paint()
@@ -70,45 +76,97 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
 
-        for (result in results) {
-            val boundingBox = result.boundingBox
+        if(modelInUse == 0) {
+            // mode offline
+            for (result in resultsOffline) {
+                val boundingBox = result.boundingBox
 
-            val top = boundingBox.top * scaleFactor
-            val bottom = boundingBox.bottom * scaleFactor
-            val left = boundingBox.left * scaleFactor
-            val right = boundingBox.right * scaleFactor
+                val top = boundingBox.top * scaleFactor
+                val bottom = boundingBox.bottom * scaleFactor
+                val left = boundingBox.left * scaleFactor
+                val right = boundingBox.right * scaleFactor
 
-            // Draw bounding box around detected objects
-            val drawableRect = RectF(left, top, right, bottom)
-            canvas.drawRect(drawableRect, boxPaint)
+                // Draw bounding box around detected objects
+                val drawableRect = RectF(left, top, right, bottom)
+                canvas.drawRect(drawableRect, boxPaint)
 
-            // Create text to display alongside detected objects
-            val drawableText =
-                result.categories[0].label
+                // Create text to display alongside detected objects
+                val drawableText =
+                    result.categories[0].label
 
-            // Draw rect behind display text
-            textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
-            val textWidth = bounds.width()
-            val textHeight = bounds.height()
-            canvas.drawRect(
-                left,
-                top,
-                left + textWidth + BOUNDING_RECT_TEXT_PADDING,
-                top + textHeight + BOUNDING_RECT_TEXT_PADDING,
-                textBackgroundPaint
-            )
+                // Draw rect behind display text
+                textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
+                val textWidth = bounds.width()
+                val textHeight = bounds.height()
+                canvas.drawRect(
+                    left,
+                    top,
+                    left + textWidth + BOUNDING_RECT_TEXT_PADDING,
+                    top + textHeight + BOUNDING_RECT_TEXT_PADDING,
+                    textBackgroundPaint
+                )
 
-            // Draw text for detected object
-            canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
+                // Draw text for detected object
+                canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
+            }
+        } else {
+            // mode online
+            for (result in resultsOnline) {
+                // TODO: draw bounding box
+                val boundingBox = result.box
+
+                val top = boundingBox[0] * scaleFactor
+                val bottom = boundingBox[1] * scaleFactor
+                val left = boundingBox[2] * scaleFactor
+                val right = boundingBox[3] * scaleFactor
+
+                // Draw bounding box around detected objects
+                val drawableRect = RectF(left, top, right, bottom)
+                canvas.drawRect(drawableRect, boxPaint)
+
+                // Create text to display alongside detected objects
+                val drawableText = result.label
+
+                // Draw rect behind display text
+                textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
+                val textWidth = bounds.width()
+                val textHeight = bounds.height()
+                canvas.drawRect(
+                    left,
+                    top,
+                    left + textWidth + BOUNDING_RECT_TEXT_PADDING,
+                    top + textHeight + BOUNDING_RECT_TEXT_PADDING,
+                    textBackgroundPaint
+                )
+
+                // Draw text for detected object
+                canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
+            }
         }
     }
 
-    fun setResults(
+    fun setResultsOffline(
       detectionResults: MutableList<Detection>,
+      mode: Int,
       imageHeight: Int,
       imageWidth: Int,
     ) {
-        results = detectionResults
+        resultsOffline = detectionResults
+        modelInUse = mode
+
+        // PreviewView is in FILL_START mode. So we need to scale up the bounding box to match with
+        // the size that the captured images will be displayed.
+        scaleFactor = max(width * 1f / imageWidth, height * 1f / imageHeight)
+    }
+
+    fun setResultsOnline(
+        detectionResults: ArrayList<ResultAnnotation>,
+        mode: Int,
+        imageHeight: Int,
+        imageWidth: Int,
+    ) {
+        resultsOnline = detectionResults
+        modelInUse = mode
 
         // PreviewView is in FILL_START mode. So we need to scale up the bounding box to match with
         // the size that the captured images will be displayed.

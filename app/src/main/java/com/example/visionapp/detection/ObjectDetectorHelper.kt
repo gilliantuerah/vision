@@ -6,6 +6,7 @@ import android.os.SystemClock
 import android.util.Log
 import com.example.visionapp.MainActivity
 import com.example.visionapp.api.Service
+import com.example.visionapp.api.datatype.ResultAnnotation
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
@@ -105,7 +106,7 @@ class ObjectDetectorHelper(
 
             val results = objectDetector?.detect(tensorImage)
 //            inferenceTime = SystemClock.uptimeMillis() - inferenceTime
-            objectDetectorListener?.onResults(
+            objectDetectorListener?.onResultsModeOffline(
                 results,
                 image,
                 tensorImage.height,
@@ -117,18 +118,24 @@ class ObjectDetectorHelper(
             val serviceApi = Service()
             val result = serviceApi.predictOnServer(image, "MobileNet")
 
-            // TODO: draw result in overlay
-            Log.d("Hasil prediksi server", result.toString())
+            objectDetectorListener?.onResultsModeOnline(
+                result,
+                image
+            )
         }
     }
 
     interface DetectorListener {
         fun onError(error: String)
-        fun onResults(
+        fun onResultsModeOffline(
             results: MutableList<Detection>?,
             image: Bitmap,
             imageHeight: Int,
             imageWidth: Int
+        )
+        fun onResultsModeOnline(
+            results: ArrayList<ResultAnnotation>?,
+            image: Bitmap
         )
     }
 
