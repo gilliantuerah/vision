@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
     private lateinit var tts : TextToSpeech
     private var isTTSObjectFinished = true
-    var tncAccepted = false
     var mapTTSid = HashMap<String, String>()
     var ttsId = "app"
     var ttsObjectId = "object"
@@ -208,6 +207,10 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     private fun showTncDialog() {
+        // save value when tnc accepted
+        val sharedPreference =  getSharedPreferences("sharedPrefs",Context.MODE_PRIVATE)
+        var editor = sharedPreference.edit()
+
         // pop up dialog tnc
         // inflate the dialog
         val tncDialog = TncDialogBinding.inflate(layoutInflater)
@@ -220,21 +223,16 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         tncDialog.btnSetuju.setOnClickListener{
             // close dialog
             alertDialogTnc?.dismiss()
-            // set var
-            tncAccepted = true
+            // set tncAccepted
+            editor.apply {
+                putBoolean("tncAccepted", true)
+            }.apply()
             // open bottomsheet
             showBottomSheetDialog()
         }
     }
 
     private fun showBottomSheetDialog() {
-        // save value for bottom sheet opened
-        val sharedPreference =  getSharedPreferences("sharedPrefs",Context.MODE_PRIVATE)
-        var editor = sharedPreference.edit()
-        editor.apply {
-            putBoolean("showFirstBottomSheet", true)
-        }.apply()
-
         // bottom sheet dialog
         bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         val bottomSheetView = LayoutInflater.from(applicationContext).inflate(
@@ -351,13 +349,11 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // on access camera granted
         // close deny dialog (if still open)
         // open tnc dialog
-        // then open bottom sheet dialog
+        // then open bottom sheet dialog (on click button "setuju")
         if(alertDialogDeny?.isShowing == true) {
             alertDialogDeny?.dismiss()
         }
-        if(!tncAccepted) {
-            showTncDialog()
-        }
+        showTncDialog()
     }
 
     private fun checkCameraAccess() {
@@ -365,9 +361,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             startCamera()
             // load shared preferences data
             val sharedPreference =  getSharedPreferences("sharedPrefs",Context.MODE_PRIVATE)
-            val showFirstBottomSheet = sharedPreference.getBoolean("showFirstBottomSheet", false)
+            val tncAccepted = sharedPreference.getBoolean("tncAccepted", false)
             // if bottom sheet never show
-            if(!showFirstBottomSheet){
+            if(!tncAccepted){
                 onAccessGranted()
             }
         }else{
@@ -491,6 +487,10 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private fun speakDetectionResult(): Boolean{
         // true if output suara untuk hasil deteksi diperbolehkan
         // false jika tidak (ada popup/bottom sheet)
+
+        // load shared preferences data
+        val sharedPreference =  getSharedPreferences("sharedPrefs",Context.MODE_PRIVATE)
+        val tncAccepted = sharedPreference.getBoolean("tncAccepted", false)
 
         // if pembacaan sebelumnya sudah selesai
         // if bottom sheet not showing
