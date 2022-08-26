@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Log
 import com.example.visionapp.MainActivity
+import com.example.visionapp.api.Service
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
@@ -80,34 +81,45 @@ class ObjectDetectorHelper(
         }
     }
 
-    fun detect(image: Bitmap, imageRotation: Int, modelName: String) {
-        if (objectDetector == null) {
-            setupObjectDetector(modelName)
+    fun detect(image: Bitmap, imageRotation: Int, modelName: String, modelInUse: Int) {
+        if (modelInUse == 0) {
+            // use mode 1 -> YoloV5
+            if (objectDetector == null) {
+                setupObjectDetector(modelName)
+            }
+
+            // Inference time is the difference between the system time at the start and finish of the
+            // process
+//            var inferenceTime = SystemClock.uptimeMillis()
+
+            // Create preprocessor for the image.
+            // See https://www.tensorflow.org/lite/inference_with_metadata/
+            //            lite_support#imageprocessor_architecture
+            val imageProcessor =
+                ImageProcessor.Builder()
+                    .add(Rot90Op(-imageRotation / 90))
+                    .build()
+
+            // Preprocess the image and convert it into a TensorImage for detection.
+            val tensorImage = imageProcessor.process(TensorImage.fromBitmap(image))
+
+            val results = objectDetector?.detect(tensorImage)
+//            inferenceTime = SystemClock.uptimeMillis() - inferenceTime
+            objectDetectorListener?.onResults(
+                results,
+                image,
+                tensorImage.height,
+                tensorImage.width
+            )
+        } else {
+            // use mode 2 -> predict from server
+            // if mode 2 in use, predict image from server
+            val serviceApi = Service()
+            val result = serviceApi.predictOnServer(image, "MobileNet")
+
+            // TODO: draw result in overlay
+            Log.d("Hasil prediksi server", result.toString())
         }
-
-        // Inference time is the difference between the system time at the start and finish of the
-        // process
-        var inferenceTime = SystemClock.uptimeMillis()
-
-        // Create preprocessor for the image.
-        // See https://www.tensorflow.org/lite/inference_with_metadata/
-        //            lite_support#imageprocessor_architecture
-        val imageProcessor =
-            ImageProcessor.Builder()
-                .add(Rot90Op(-imageRotation / 90))
-                .build()
-
-        // Preprocess the image and convert it into a TensorImage for detection.
-        val tensorImage = imageProcessor.process(TensorImage.fromBitmap(image))
-
-        val results = objectDetector?.detect(tensorImage)
-        inferenceTime = SystemClock.uptimeMillis() - inferenceTime
-        objectDetectorListener?.onResults(
-            results,
-            image,
-            inferenceTime,
-            tensorImage.height,
-            tensorImage.width)
     }
 
     interface DetectorListener {
@@ -115,7 +127,6 @@ class ObjectDetectorHelper(
         fun onResults(
             results: MutableList<Detection>?,
             image: Bitmap,
-            inferenceTime: Long,
             imageHeight: Int,
             imageWidth: Int
         )

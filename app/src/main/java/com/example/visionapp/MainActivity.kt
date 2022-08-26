@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private var isFlashOn = false
 
     // make it public, accessible to other file (ObjectDetectorHelper file)
-    private var modelInUse: MutableLiveData<Int> = MutableLiveData<Int>(0)
+    var modelInUse: MutableLiveData<Int> = MutableLiveData<Int>(0)
     var modelName: String = when (modelInUse.value) {
         MODEL_1 -> Constants.MODEL_1
         MODEL_2 -> Constants.MODEL_2
@@ -474,13 +474,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName)
-        if(modelInUse.value == 1) {
-            // if mode 2 in use, predict image from server
-            val result = serviceApi.predictOnServer(bitmapBuffer, "MobileNet")
-
-            // TODO: draw result in overlay
-            Log.d("Hasil prediksi server", result.toString())
+        modelInUse.value?.let {
+            objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName, it)
         }
     }
 
@@ -507,7 +502,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     override fun onResults(
         results: MutableList<Detection>?,
         image: Bitmap,
-        inferenceTime: Long,
         imageHeight: Int,
         imageWidth: Int
     ) {
