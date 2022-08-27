@@ -9,14 +9,15 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.*
-import java.util.*
 import kotlin.collections.ArrayList
 
 
 class Service {
-    fun getLastModel(): String? {
-        // return file path of model from server
-        var modelFile: String? = null
+    // path model yoloV5 from server
+    var modelFromServer: String? = null
+    var resultModelOnline: ArrayList<ResultAnnotation>? = ArrayList()
+
+    fun getLastModel() {
 
         // retrofit
         RetrofitClient.instance.getModel(true).enqueue(object: Callback<ModelResponse> {
@@ -27,7 +28,7 @@ class Service {
                 val responseBody = response.body()
                 Log.d("getlastmodel", responseBody.toString())
 
-                modelFile = responseBody?.data?.file_path
+                modelFromServer = responseBody?.data?.file_path
 
             }
 
@@ -35,8 +36,6 @@ class Service {
                 Log.e("Failed", t.message.toString())
             }
         })
-
-        return modelFile
     }
 
     private fun bitMapToString(bitmap: Bitmap?): String {
@@ -46,10 +45,9 @@ class Service {
         return Base64.encodeToString(b, Base64.DEFAULT)
     }
 
-    fun predictOnServer(image: Bitmap, modelName: String): ArrayList<ResultAnnotation>? {
+    fun predictOnServer(image: Bitmap, modelName: String) {
         val fileBase64 = bitMapToString(image)
         val body = PredictImageReq(fileBase64, modelName)
-        var result: ArrayList<ResultAnnotation>? = ArrayList()
 
         RetrofitClient.instance.predictImageServer(body).enqueue(object: Callback<PredictImageResponse> {
             override fun onResponse(
@@ -60,16 +58,16 @@ class Service {
                 Log.d(Constants.TAG, "response code$responseCode")
 
                 val responseBody = response.body()
-                Log.d(Constants.TAG, responseBody.toString())
+                Log.d("hasilll", responseBody?.data.toString())
 
-                result = responseBody?.data
+                resultModelOnline = responseBody?.data
+                Log.d("hasilll online", resultModelOnline.toString())
             }
 
             override fun onFailure(call: Call<PredictImageResponse>, t: Throwable) {
                 Log.e("Failed", t.message.toString())
             }
         })
-        return result
     }
 
     fun postPredictionResult(image: Bitmap, result: ArrayList<ResultAnnotation>) {

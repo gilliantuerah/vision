@@ -29,6 +29,7 @@ class ObjectDetectorHelper(
     // For this example this needs to be a var so it can be reset on changes. If the ObjectDetector
     // will not change, a lazy val would be preferable.
     private var objectDetector: ObjectDetector? = null
+    private var serviceApi: Service = Service()
 
     init {
         setupObjectDetector(modelName)
@@ -115,11 +116,12 @@ class ObjectDetectorHelper(
         } else {
             // use mode 2 -> predict from server
             // if mode 2 in use, predict image from server
-            val serviceApi = Service()
-            val result = serviceApi.predictOnServer(image, "MobileNet")
+            serviceApi.predictOnServer(image, "MobileNet")
+
+            Log.d("hasilzzz", serviceApi.resultModelOnline.toString())
 
             objectDetectorListener?.onResultsModeOnline(
-                result,
+                serviceApi.resultModelOnline,
                 image
             )
         }

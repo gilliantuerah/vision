@@ -64,17 +64,10 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
     // make it public, accessible to other file (ObjectDetectorHelper file)
     var modelInUse: MutableLiveData<Int> = MutableLiveData<Int>(0)
-    var modelName: String = when (modelInUse.value) {
-        MODEL_1 -> Constants.MODEL_1
-        MODEL_2 -> Constants.MODEL_2
-        else -> Constants.MODEL_1
-    }
+    var modelName: String = Constants.MODEL_1 // default model offline
 
     // default offline, using mode 1
     private var isOnline: Boolean = false
-
-    // path model yoloV5 from server
-    private var modelFromServer: String? = null
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
@@ -82,7 +75,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var objectDetectorHelper: ObjectDetectorHelper
 
     private lateinit var util: Utility
-    private lateinit var serviceApi: Service
+    private var serviceApi: Service = Service()
     private var alertDialogDeny: Dialog? = null
     private var alertDialogTnc: Dialog? = null
     private var bottomSheetDialog: BottomSheetDialog? = null
@@ -96,7 +89,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // listen to modelInUse on change
         modelInUse.observe(this, Observer{
             modelName = when (modelInUse.value) {
-                MODEL_1 -> Constants.MODEL_1
+                MODEL_1 -> if (serviceApi.modelFromServer == null ) Constants.MODEL_1 else serviceApi.modelFromServer.toString()
                 MODEL_2 -> Constants.MODEL_2
                 else -> Constants.MODEL_1
             }
@@ -112,10 +105,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // init object detector helper
         objectDetectorHelper = ObjectDetectorHelper(
             context = applicationContext,
-            objectDetectorListener = this)
-
-        // init service api
-        serviceApi = Service()
+            objectDetectorListener = this
+        )
 
         // init util
         util = Utility(
@@ -233,6 +224,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     private fun showBottomSheetDialog() {
+        // stop tts
+        util.stopSpeaking(ttsId)
+
         // bottom sheet dialog
         bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         val bottomSheetView = LayoutInflater.from(applicationContext).inflate(
@@ -440,10 +434,15 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                             // check internet connection
                             isOnline = util.hasActiveInternetConnetion(this)
 
-                            if(isOnline && modelFromServer == null){
+                            if (isOnline && serviceApi.modelFromServer == null){
                                 // get model from server if device is online
                                 // and not get model from server yet
-                                modelFromServer = serviceApi.getLastModel()
+                                serviceApi.getLastModel()
+                            }
+
+                            // set model offline to modelFromServer
+                            if (modelInUse.value == 0) {
+                                modelName = if (serviceApi.modelFromServer != null) serviceApi.modelFromServer.toString() else Constants.MODEL_1
                             }
 
                             // TODO: case klo tiba2 offline, dan lagi pake mode 2 -> auto switch ke mode 1
