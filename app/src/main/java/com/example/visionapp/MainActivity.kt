@@ -296,6 +296,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 // -> model ga diganti
                 // -> switch tetep diem
                 switchModel.isChecked = false;
+                util.textToSpeech(Constants.FAIL_SWITCH_TO_MODE_1, ttsId)
             }
 
         } else {

@@ -21,8 +21,9 @@ object Constants {
     const val FLASH_OFF = "Anda mematikan lampu flash. Tekan tombol di tengah untuk menyalakan lampu flash."
 
     // mode
-    const val SWITCH_TO_MODE_0 = "Anda mengaktifkan mode satu"
-    const val SWITCH_TO_MODE_1 = "Anda mengaktifkan mode dua"
+    const val SWITCH_TO_MODE_0 = "Anda mengaktifkan mode offline"
+    const val FAIL_SWITCH_TO_MODE_1 = "Anda tidak bisa mengaktifkan mode online. Nyalakan koneksi internet untuk menggunakan mode ini."
+    const val SWITCH_TO_MODE_1 = "Anda mengaktifkan mode online. Mode ini menggunakan koneksi internet"
 
     // object detection
     const val OPEN_DETECTION = "Objek terdeteksi. Ada barang"
