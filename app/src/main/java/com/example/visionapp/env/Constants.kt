@@ -14,7 +14,7 @@ object Constants {
     const val NO_CAMERA_ACCESS = "Selamat datang di aplikasi V-sion. Silakan beri akses kamera untuk menggunakan aplikasi ini."
 
     // help
-    const val HELP_TEXT = "Arahkan handphone ke arah barang yang ingin Anda deteksi. Pembacaan hasil deteksi akan dilakukan setiap 5 detik. Barang akan dideteksi secara terurut dari bagian kiri atas ke kanan bawah. Tekan tombol di kiri bawah untuk bantuan. Tekan tombol di kanan bawah untuk mengubah mode. Tekan tombol di tengah untuk mematikan lampu flash."
+    const val HELP_TEXT = "Arahkan handphone ke arah barang yang ingin Anda deteksi. Barang akan dideteksi secara terurut dari bagian kiri atas ke kanan bawah. Tekan tombol di kiri bawah untuk bantuan. Tekan tombol di tengah bawah untuk mematikan lampu flash. Tekan tombol di kanan bawah untuk mengubah mode. Mode online hanya dapat dilakukan jika perangkat tersambung ke internet."
 
     // flash
     const val FLASH_ON = "Anda menyalakan lampu flash. Tekan tombol di tengah untuk mematikan lampu flash."
