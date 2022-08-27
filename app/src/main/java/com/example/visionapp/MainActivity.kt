@@ -35,6 +35,7 @@ import com.example.visionapp.databinding.ActivityMainBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
 import com.example.visionapp.databinding.TncDialogBinding
 import com.example.visionapp.detection.ObjectDetectorHelper
+import com.example.visionapp.env.CheckNetworkConnection
 import com.example.visionapp.env.Constants
 import com.example.visionapp.env.Utility
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -63,11 +64,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private var isFlashOn = false
 
     // make it public, accessible to other file (ObjectDetectorHelper file)
-    var modelInUse: MutableLiveData<Int> = MutableLiveData<Int>(0)
+    private var modelInUse: Int = 0 // default model offline
     var modelName: String = Constants.MODEL_1 // default model offline
 
     // default offline, using mode 1
     private var isOnline: Boolean = false
+    private lateinit var checkNetworkConnection: CheckNetworkConnection
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
@@ -86,14 +88,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // listen to modelInUse on change
-        modelInUse.observe(this, Observer{
-            modelName = when (modelInUse.value) {
-                MODEL_1 -> if (serviceApi.modelFromServer == null ) Constants.MODEL_1 else serviceApi.modelFromServer.toString()
-                MODEL_2 -> Constants.MODEL_2
-                else -> Constants.MODEL_1
-            }
-        })
+        // check network connection
+        callNetworkConnection()
 
         // init tts bahasa
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener {
@@ -147,6 +143,36 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // stop text to speech on application close
         if(tts != null){
             tts.shutdown();
+        }
+    }
+
+    private fun callNetworkConnection() {
+        checkNetworkConnection = CheckNetworkConnection(application)
+        checkNetworkConnection.observe(this) { isConnected ->
+            if (isConnected) {
+                // network connected
+                isOnline = true
+                if (serviceApi.modelFromServer == null){
+                    // get model from server if device is online
+                    // and not get model from server yet
+                    serviceApi.getLastModel()
+                }
+
+                // set model offline to modelFromServer
+                if (modelInUse == 0) {
+                    modelName = if (serviceApi.modelFromServer != null) serviceApi.modelFromServer.toString() else Constants.MODEL_1
+                }
+            } else {
+                // network disconnected
+                isOnline = false
+
+                // device goes offline when using mode online (mode 2)
+                // switch to mode offline (mode 1)
+                if (modelInUse == 1) {
+                    modelName = Constants.MODEL_1
+                    switchModel.isChecked = false
+                }
+            }
         }
     }
 
@@ -262,7 +288,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             if(isOnline) {
                 // if mobile has internet connectivity
                 // change to mode 1
-                modelInUse.value = 1
+                modelInUse = 1
                 // text to speech
                 util.textToSpeech(Constants.SWITCH_TO_MODE_1, ttsId)
             } else {
@@ -274,7 +300,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         } else {
             // change to mode 0
-            modelInUse.value = 0
+            modelInUse = 0
             // text to speech
             util.textToSpeech(Constants.SWITCH_TO_MODE_0, ttsId)
         }
@@ -431,22 +457,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                                     Bitmap.Config.ARGB_8888
                                 )
                             }
-                            // check internet connection
-                            isOnline = util.hasActiveInternetConnetion(this)
-
-                            if (isOnline && serviceApi.modelFromServer == null){
-                                // get model from server if device is online
-                                // and not get model from server yet
-                                serviceApi.getLastModel()
-                            }
-
-                            // set model offline to modelFromServer
-                            if (modelInUse.value == 0) {
-                                modelName = if (serviceApi.modelFromServer != null) serviceApi.modelFromServer.toString() else Constants.MODEL_1
-                            }
-
-                            // TODO: case klo tiba2 offline, dan lagi pake mode 2 -> auto switch ke mode 1
-                            Log.d("hlo", isOnline.toString())
 
                             detectObjects(image)
 
@@ -473,9 +483,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        modelInUse.value?.let {
-            objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName, it)
-        }
+        objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName, modelInUse)
     }
 
     private fun isSpeakResultAllowed(): Boolean{
@@ -505,14 +513,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         imageWidth: Int
     ) {
         // Pass necessary information to OverlayView for drawing on the canvas
-        modelInUse.value?.let {
-            overlay?.setResultsOffline(
-                results ?: LinkedList<Detection>(),
-                it,
-                imageHeight,
-                imageWidth
-            )
-        }
+        overlay?.setResultsOffline(
+            results ?: LinkedList<Detection>(),
+            modelInUse,
+            imageHeight,
+            imageWidth
+        )
 
         if (results != null && results.isNotEmpty() && isSpeakResultAllowed()) {
             // start speak
@@ -558,15 +564,13 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         image: Bitmap
     ){
         // Pass necessary information to OverlayView for drawing on the canvas
-        modelInUse.value?.let {
-            if (results != null) {
-                overlay?.setResultsOnline(
-                    results,
-                    it,
-                    image.height,
-                    image.width
-                )
-            }
+        if (results != null) {
+            overlay?.setResultsOnline(
+                results,
+                modelInUse,
+                image.height,
+                image.width
+            )
         }
         Log.d("Hasil prediksi server", results.toString())
 
@@ -590,10 +594,5 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
         // Force a redraw
         overlay?.invalidate()
-    }
-
-    companion object {
-        const val MODEL_1 = 0
-        const val MODEL_2 = 1
     }
 }
