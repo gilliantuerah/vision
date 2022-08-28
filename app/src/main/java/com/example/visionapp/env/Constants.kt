@@ -7,7 +7,7 @@ object Constants {
     val REQUIRED_PERMISSIONS = arrayOf(android.Manifest.permission.CAMERA)
 
     // model file name
-    const val MODEL_1 = "ink-model.tflite"
+    const val MODEL_1 = "exp15_metadata.tflite"
     const val MODEL_2 = "mobilenetv1.tflite"
     const val YOLO_LABELS = "coco_classes38.txt"
 

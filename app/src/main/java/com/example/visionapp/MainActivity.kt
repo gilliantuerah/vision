@@ -151,12 +151,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         switchModel?.setOnCheckedChangeListener{ _, isChecked ->
             modelSwitchOnClick(isChecked)
         }
-
-        // TODO: change with real func with GET padul later
-        getPostsDummy()
-
-        // TODO: change with real func with POST padul later
-        createPostsDummy()
     }
 
     override fun onStop() {
@@ -432,7 +426,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // Pass Bitmap and rotation to the object detector helper for processing and detection
 //        objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName)
         Log.d(Constants.TAG, "hi")
-        Log.d(Constants.TAG, objectDetectorHelper.recognizeImage(bitmapBuffer).toString())
+        Log.d("masuk recog", objectDetectorHelper.recognizeImage(bitmapBuffer).toString())
     }
 
     override fun onError(error: String) {

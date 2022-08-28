@@ -6,10 +6,8 @@ import android.graphics.RectF
 import android.os.SystemClock
 import android.util.Log
 import com.example.visionapp.MainActivity
-import com.example.visionapp.env.Constants
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.Tensor
-import org.tensorflow.lite.examples.detection.tflite.Classifier
 import org.tensorflow.lite.examples.detection.tflite.Classifier.Recognition
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.gpu.GpuDelegate
@@ -33,9 +31,9 @@ import kotlin.math.pow
 
 
 open class ObjectDetectorHelper(
-    private var threshold: Float = 0.2f,
+    private var threshold: Float = 0.0f,
     private var numThreads: Int = 2,
-    private var maxResults: Int = 3,
+    private var maxResults: Int = 10,
     private var currentDelegate: Int = 0,
     modelName: String = MainActivity().modelName,
     private val labels: List<String>,
@@ -336,8 +334,27 @@ open class ObjectDetectorHelper(
                 }
             }
         }
+
+        Log.d("hasilnyanms bgt", nmsList.toString())
         return nmsList
     }
+
+    //    public static Bitmap scale(Context context, String filePath) {
+    //        AssetManager assetManager = context.getAssets();
+    //
+    //        InputStream istr;
+    //        Bitmap bitmap = null;
+    //        try {
+    //            istr = assetManager.open(filePath);
+    //            bitmap = BitmapFactory.decodeStream(istr);
+    //            bitmap = Bitmap.createScaledBitmap(bitmap, MainActivity.TF_OD_API_INPUT_SIZE, MainActivity.TF_OD_API_INPUT_SIZE, false);
+    //        } catch (IOException e) {
+    //            // handle exception
+    //            Log.e("getBitmapFromAsset", "getBitmapFromAsset: " + e.getMessage());
+    //        }
+    //
+    //        return bitmap;
+    //    }
 
     fun recognizeImage(image: Bitmap): ArrayList<Recognition>? {
         convertBitmapToByteBuffer(image)
@@ -346,18 +363,20 @@ open class ObjectDetectorHelper(
         outData.rewind()
         outputMap[0] = outData
         val inputArray = arrayOf<Any>(imgData)
+
         tfLite.runForMultipleInputsOutputs(inputArray, outputMap)
         val byteBuffer = outputMap[0] as ByteBuffer
         byteBuffer!!.rewind()
-        val detections: ArrayList<Classifier.Recognition> = ArrayList<Classifier.Recognition>()
+        val detections: ArrayList<Recognition> = ArrayList<Recognition>()
+
         val out =
             Array(1) {
-                Array(output_box) {
+                Array(maxResults) {
                     FloatArray(numClass + 5)
                 }
             }
         Log.d("YoloV5Classifier", "out[0] detect start")
-        for (i in 0 until output_box) {
+        for (i in 0 until maxResults) {
             for (j in 0 until numClass + 5) {
                 if (isQuantized) {
                     out[0][i][j] =
@@ -371,7 +390,10 @@ open class ObjectDetectorHelper(
                 out[0][i][j] = out[0][i][j] * getInputSize()
             }
         }
-        for (i in 0 until output_box) {
+
+        Log.d("chasil out", out.toString())
+
+        for (i in 0 until maxResults) {
             val offset = 0
             val confidence = out[0][i][4]
             var detectedClass = -1
@@ -381,13 +403,24 @@ open class ObjectDetectorHelper(
                 classes[c] = out[0][i][5 + c]
             }
             for (c in labels.indices) {
+                Log.d("chasil", c.toString())
                 if (classes[c] > maxClass) {
+                    Log.d("chasil detected", c.toString())
                     detectedClass = c
                     maxClass = classes[c]
                 }
             }
+
+            Log.d("chasil detected", detectedClass.toString())
+            Log.d("chasil conf", confidence.toString())
+            Log.d("chasil maxclass", maxClass.toString())
+            Log.d("chasil objthresh", getObjThresh().toString())
             val confidenceInClass = maxClass * confidence
+            Log.d("confidenceInClass", confidenceInClass.toString())
             if (confidenceInClass > getObjThresh()) {
+                Log.d("hasill conf", confidenceInClass.toString())
+                Log.d("hasill labels idx", detectedClass.toString())
+                Log.d("hasill detectedclass", labels[detectedClass])
                 val xPos = out[0][i][0]
                 val yPos = out[0][i][1]
                 val w = out[0][i][2]
@@ -400,14 +433,17 @@ open class ObjectDetectorHelper(
                     min((image.height - 1).toFloat(), yPos + h / 2)
                 )
                 detections.add(
-                    Classifier.Recognition(
+                    Recognition(
                         "" + offset, labels[detectedClass],
                         confidenceInClass, rect, detectedClass
                     )
                 )
             }
+            Log.d("hasilll sblom", detections.toString())
         }
         Log.d("YoloV5Classifier", "detect end")
+
+        Log.d("hasilnya sblom nms bgt", detections.toString())
 
         return nms(detections)
     }
