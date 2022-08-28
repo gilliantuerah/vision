@@ -27,13 +27,14 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.visionapp.R
 import com.example.visionapp.api.datatype.ResultAnnotation
+import org.tensorflow.lite.examples.detection.tflite.Classifier
 import java.util.LinkedList
 import kotlin.math.max
 import org.tensorflow.lite.task.vision.detector.Detection
 
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
-    private var resultsOffline: List<Detection> = LinkedList<Detection>()
+    private var resultsOffline: ArrayList<Classifier.Recognition> = ArrayList<Classifier.Recognition>()
     private var resultsOnline: ArrayList<ResultAnnotation> = ArrayList<ResultAnnotation>()
 
     // default mode offline
@@ -79,25 +80,22 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         if(modelInUse == 0) {
             // mode offline
             for (result in resultsOffline) {
-                val boundingBox = result.boundingBox
-
-                val top = boundingBox.top * scaleFactor
-                val bottom = boundingBox.bottom * scaleFactor
-                val left = boundingBox.left * scaleFactor
-                val right = boundingBox.right * scaleFactor
+                val drawableRect = result.getLocation()
 
                 // Draw bounding box around detected objects
-                val drawableRect = RectF(left, top, right, bottom)
                 canvas.drawRect(drawableRect, boxPaint)
 
                 // Create text to display alongside detected objects
-                val drawableText =
-                    result.categories[0].label
+                val drawableText = result.title.toString()
 
                 // Draw rect behind display text
                 textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
                 val textWidth = bounds.width()
                 val textHeight = bounds.height()
+
+                val top = drawableRect.top
+                val left = drawableRect.left
+
                 canvas.drawRect(
                     left,
                     top,
@@ -146,7 +144,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
     }
 
     fun setResultsOffline(
-      detectionResults: MutableList<Detection>,
+      detectionResults: ArrayList<Classifier.Recognition>,
       mode: Int,
       imageHeight: Int,
       imageWidth: Int,

@@ -41,10 +41,13 @@ import com.example.visionapp.env.Utility
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_sheet_dialog.*
+import org.tensorflow.lite.examples.detection.tflite.Classifier
 import org.tensorflow.lite.task.vision.detector.Detection
+import java.io.InputStream
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener {
@@ -66,6 +69,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     // make it public, accessible to other file (ObjectDetectorHelper file)
     private var modelInUse: Int = 0 // default model offline
     var modelName: String = Constants.MODEL_1 // default model offline
+    private val labelsYoloV5 = mutableListOf<String>()
 
     // default offline, using mode 1
     private var isOnline: Boolean = false
@@ -98,10 +102,18 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             }
         })
 
+        // yolo labels
+        val labelsInput: InputStream = assets.open(Constants.YOLO_LABELS)
+        labelsInput.bufferedReader().forEachLine {
+            labelsYoloV5.add(it)
+        }
+
         // init object detector helper
         objectDetectorHelper = ObjectDetectorHelper(
             context = applicationContext,
-            objectDetectorListener = this
+            objectDetectorListener = this,
+            labels = labelsYoloV5,
+            inputSize = 640
         )
 
         // init util
@@ -482,9 +494,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         // Copy out RGB bits to the shared bitmap buffer
         image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
 
-        val imageRotation = image.imageInfo.rotationDegrees
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        objectDetectorHelper.detect(bitmapBuffer, imageRotation, modelName, modelInUse)
+        objectDetectorHelper.detect(bitmapBuffer, modelInUse)
     }
 
     private fun isSpeakResultAllowed(): Boolean{
@@ -508,18 +519,20 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     override fun onResultsModeOffline(
-        results: MutableList<Detection>?,
-        image: Bitmap,
-        imageHeight: Int,
-        imageWidth: Int
+        results: ArrayList<Classifier.Recognition>?,
+        image: Bitmap
     ) {
         // Pass necessary information to OverlayView for drawing on the canvas
-        overlay?.setResultsOffline(
-            results ?: LinkedList<Detection>(),
-            modelInUse,
-            imageHeight,
-            imageWidth
-        )
+        if (results != null) {
+            overlay?.setResultsOffline(
+                results,
+                modelInUse,
+                image.height,
+                image.width
+            )
+        }
+
+        Log.d("hasilink", results.toString())
 
         if (results != null && results.isNotEmpty() && isSpeakResultAllowed()) {
             // start speak
@@ -528,21 +541,21 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             util.textToSpeechObjectDetected(Constants.OPEN_DETECTION, ttsId)
 
             // array for post to server
-            var arrayResult: ArrayList<ResultAnnotation> = ArrayList<ResultAnnotation>()
+            var arrayResult: ArrayList<ResultAnnotation> = ArrayList()
             for (result in results) {
 
-                val label = result.categories[0].label
-                val box = result.boundingBox
+                val label = result.title
+                val box = result.getLocation()
 
                 val boxArray = arrayListOf(box.left, box.top, box.right, box.bottom)
 
                 arrayResult.add(ResultAnnotation(
                     boxArray,
-                    label
+                    label.toString()
                 ))
                 // objek yang terdeteksi masuk queue untuk di-output sebagai speech
                 // output setelah obrolan lainnya selesai dilakukan
-                util.textToSpeechObjectDetected(label, ttsObjectId)
+                util.textToSpeechObjectDetected(label.toString(), ttsObjectId)
             }
 
             if (isOnline) {
