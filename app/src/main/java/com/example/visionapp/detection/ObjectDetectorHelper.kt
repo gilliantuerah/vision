@@ -28,7 +28,7 @@ import kotlin.math.pow
 
 
 open class ObjectDetectorHelper(
-    private var threshold: Float = 0.0f,
+    private var threshold: Float = 0.2f,
     private var numThreads: Int = 2,
     private var maxResults: Int = 10,
     private var currentDelegate: Int = 0,
@@ -389,12 +389,12 @@ open class ObjectDetectorHelper(
 
         val out =
             Array(1) {
-                Array(maxResults) {
+                Array(output_box) {
                     FloatArray(numClass + 5)
                 }
             }
         Log.d("YoloV5Classifier", "out[0] detect start")
-        for (i in 0 until maxResults) {
+        for (i in 0 until output_box) {
             for (j in 0 until numClass + 5) {
                 if (isQuantized) {
                     out[0][i][j] =
@@ -411,7 +411,7 @@ open class ObjectDetectorHelper(
 
         Log.d("chasil out", out.toString())
 
-        for (i in 0 until maxResults) {
+        for (i in 0 until output_box) {
             val offset = 0
             val confidence = out[0][i][4]
             var detectedClass = -1
@@ -429,15 +429,9 @@ open class ObjectDetectorHelper(
                 }
             }
 
-            Log.d("chasil detected", detectedClass.toString())
-            Log.d("chasil conf", confidence.toString())
-            Log.d("chasil maxclass", maxClass.toString())
-            Log.d("chasil objthresh", getObjThresh().toString())
             val confidenceInClass = maxClass * confidence
             Log.d("confidenceInClass", confidenceInClass.toString())
             if (confidenceInClass > getObjThresh()) {
-                Log.d("hasill conf", confidenceInClass.toString())
-                Log.d("hasill labels idx", detectedClass.toString())
                 Log.d("hasill detectedclass", labels[detectedClass])
                 val xPos = out[0][i][0]
                 val yPos = out[0][i][1]
@@ -457,7 +451,6 @@ open class ObjectDetectorHelper(
                     )
                 )
             }
-            Log.d("hasilll sblom", detections.toString())
         }
         Log.d("YoloV5Classifier", "detect end")
 
