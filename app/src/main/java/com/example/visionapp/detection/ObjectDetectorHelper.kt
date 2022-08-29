@@ -421,9 +421,7 @@ open class ObjectDetectorHelper(
                 classes[c] = out[0][i][5 + c]
             }
             for (c in labels.indices) {
-                Log.d("chasil", c.toString())
                 if (classes[c] > maxClass) {
-                    Log.d("chasil detected", c.toString())
                     detectedClass = c
                     maxClass = classes[c]
                 }

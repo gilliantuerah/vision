@@ -26,10 +26,7 @@ import androidx.camera.core.ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.example.visionapp.api.*
-import com.example.visionapp.api.datatype.ModelResponse
 import com.example.visionapp.api.datatype.ResultAnnotation
 import com.example.visionapp.databinding.ActivityMainBinding
 import com.example.visionapp.databinding.DenyCameraDialogBinding
@@ -42,12 +39,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_sheet_dialog.*
 import org.tensorflow.lite.examples.detection.tflite.Classifier
-import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.InputStream
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener {
@@ -301,6 +296,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 // if mobile has internet connectivity
                 // change to mode 1
                 modelInUse = 1
+
+                switchModel.contentDescription = Constants.SWITCH_TO_MODE_1
                 // text to speech
                 util.textToSpeech(Constants.SWITCH_TO_MODE_1, ttsId)
             } else {
@@ -315,6 +312,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             // change to mode 0
             modelInUse = 0
             // text to speech
+            switchModel.contentDescription = Constants.SWITCH_TO_MODE_0
             util.textToSpeech(Constants.SWITCH_TO_MODE_0, ttsId)
         }
     }
@@ -453,9 +451,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             // ImageAnalysis. Using RGBA 8888 to match how our models work
             imageAnalyzer =
                 ImageAnalysis.Builder()
-//                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
 //                    .setTargetRotation(viewFinder?.display.rotation)
-//                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .setOutputImageFormat(OUTPUT_IMAGE_FORMAT_RGBA_8888)
                     .build()
                     // The analyzer can then be assigned to the instance

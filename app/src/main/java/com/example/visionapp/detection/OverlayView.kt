@@ -23,6 +23,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.visionapp.R
@@ -31,6 +32,7 @@ import org.tensorflow.lite.examples.detection.tflite.Classifier
 import java.util.LinkedList
 import kotlin.math.max
 import org.tensorflow.lite.task.vision.detector.Detection
+import kotlin.math.min
 
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
@@ -113,10 +115,12 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
                 // TODO: draw bounding box
                 val boundingBox = result.box
 
+
+                val left = boundingBox[1] * scaleFactor
                 val top = boundingBox[0] * scaleFactor
-                val bottom = boundingBox[1] * scaleFactor
-                val left = boundingBox[2] * scaleFactor
+
                 val right = boundingBox[3] * scaleFactor
+                val bottom = boundingBox[2] * scaleFactor
 
                 // Draw bounding box around detected objects
                 val drawableRect = RectF(left, top, right, bottom)
