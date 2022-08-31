@@ -39,7 +39,7 @@
         android:background="@color/deviderView"/>
     <TextView
         android:id="@+id/tvTnc"
-        android:text="Gambar hasil tangkapan aplikasi akan kami simpan dan proses untuk keperluan peningkatkan kualitas aplikasi."
+        android:text="@string/tnc"
         android:gravity="center"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"

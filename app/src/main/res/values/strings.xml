@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Vision</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="deny_camera">Akses kamera ditolak. Silakan beri akses kamera dengan membuka menu Izin, pilih Kamera, dan pilih Izinkan hanya saat aplikasi digunakan.</string>
+    <string name="tnc">Gambar hasil tangkapan aplikasi akan kami simpan dan proses untuk keperluan peningkatkan kualitas aplikasi.</string>
+    <string name="help_desc">Arahkan handphone ke arah barang yang ingin Anda deteksi. Barang akan dideteksi secara terurut dari bagian kiri atas ke kanan bawah. \n\nTekan tombol di kiri bawah untuk bantuan. Tekan tombol di tengah bawah untuk mematikan lampu flash. Tekan tombol di kanan bawah untuk mengubah mode. Mode yang digunakan pada saat membuka aplikasi adalah mode offline. Mode online hanya dapat diaktifkan jika perangkat tersambung ke internet.</string>
 </resources>

@@ -59,7 +59,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     private lateinit var cameraM: CameraManager
     private lateinit var camera: Camera
     private lateinit var cameraExecutor: ExecutorService
-    private lateinit var cameraId: String
     private var isFlashOn = false
 
     // make it public, accessible to other file (ObjectDetectorHelper file)
@@ -202,7 +201,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         })
 
         tts.language = Locale("id", "ID")
-        tts.setSpeechRate(1.0f)
     }
 
     private fun showPopupDenyDialog() {
