@@ -7,6 +7,7 @@ import android.util.Log
 import com.example.visionapp.MainActivity
 import com.example.visionapp.api.Service
 import com.example.visionapp.api.datatype.ResultAnnotation
+import com.example.visionapp.env.Constants
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.Tensor
 import org.tensorflow.lite.examples.detection.tflite.Classifier.Recognition
@@ -152,7 +153,7 @@ open class ObjectDetectorHelper(
         } else {
             // use mode 2 -> predict from server
             // if mode 2 in use, predict image from server
-            serviceApi.predictOnServer(image, "MobileNet")
+            serviceApi.predictOnServer(image, Constants.MODEL_ONLINE)
 
             objectDetectorListener?.onResultsModeOnline(
                 serviceApi.resultModelOnline,

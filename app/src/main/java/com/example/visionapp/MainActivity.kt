@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
     // make it public, accessible to other file (ObjectDetectorHelper file)
     private var modelInUse: Int = 0 // default model offline
-    var modelName: String = Constants.MODEL_1 // default model offline
+    var modelName: String = Constants.MODEL_OFFLINE // default model offline
     private val labelsYoloV5 = mutableListOf<String>()
 
     // default offline, using mode 1
@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
                 // set model offline to modelFromServer
                 if (modelInUse == 0) {
-                    modelName = if (serviceApi.modelFromServer != null) serviceApi.modelFromServer.toString() else Constants.MODEL_1
+                    modelName = if (serviceApi.modelFromServer != null) serviceApi.modelFromServer.toString() else Constants.MODEL_OFFLINE
                 }
             } else {
                 // network disconnected
@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 // device goes offline when using mode online (mode 2)
                 // switch to mode offline (mode 1)
                 if (modelInUse == 1) {
-                    modelName = Constants.MODEL_1
+                    modelName = Constants.MODEL_ONLINE
                     switchModel.isChecked = false
                 }
             }
@@ -384,6 +384,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 onAccessGranted()
             }
         }else{
+            util.textToSpeech(Constants.NO_CAMERA_ACCESS, ttsId)
+
             ActivityCompat.requestPermissions(
                 this,
                 Constants.REQUIRED_PERMISSIONS,

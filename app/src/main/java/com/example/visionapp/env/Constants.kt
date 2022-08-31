@@ -7,8 +7,9 @@ object Constants {
     val REQUIRED_PERMISSIONS = arrayOf(android.Manifest.permission.CAMERA)
 
     // model file name
-    const val MODEL_1 = "yolov5.tflite"
+    const val MODEL_OFFLINE = "yolov5.tflite"
     const val YOLO_LABELS = "coco_classes38.txt"
+    const val MODEL_ONLINE = "MobileNet"
 
     // script text-to-speech
     const val NO_CAMERA_ACCESS = "Selamat datang di aplikasi V-sion. Silakan beri akses kamera untuk menggunakan aplikasi ini."
