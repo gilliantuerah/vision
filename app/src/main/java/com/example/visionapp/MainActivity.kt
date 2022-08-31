@@ -16,6 +16,7 @@ import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import android.util.Rational
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
@@ -297,12 +298,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 // change to mode 1
                 modelInUse = 1
 
-                switchModel.contentDescription = Constants.SWITCH_TO_MODE_1
+                switchModel.contentDescription = "mode online"
                 // text to speech
                 util.textToSpeech(Constants.SWITCH_TO_MODE_1, ttsId)
             } else {
                 // if mobile offline
-                // -> model ga diganti
+                // -> model ga diganti 
                 // -> switch tetep diem
                 switchModel.isChecked = false;
                 util.textToSpeech(Constants.FAIL_SWITCH_TO_MODE_1, ttsId)
@@ -312,7 +313,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             // change to mode 0
             modelInUse = 0
             // text to speech
-            switchModel.contentDescription = Constants.SWITCH_TO_MODE_0
+            switchModel.contentDescription = "mode offline"
             util.textToSpeech(Constants.SWITCH_TO_MODE_0, ttsId)
         }
     }
@@ -333,23 +334,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             // TODO: ganti pake toast yg bagus y
             Log.d(Constants.TAG, "gapunya flash")
         } else {
-            // TODO: KEKNYA INI DIAPUS GASIIII
-            Log.d(Constants.TAG, "flash masuk")
-            try {
-                val cameraIdList = cameraM.cameraIdList
-
-                Log.d(Constants.TAG, cameraIdList.toString())
-
-                cameraId = cameraM.cameraIdList[0]
-
-                Log.d(Constants.TAG, cameraId)
-
-            } catch (e: CameraAccessException) {
-                Log.d(Constants.TAG, "error ni ges si flash ges$e")
-                e.printStackTrace()
-            }
-            // TODO: TUTUP TODO
-
             if (!isFlashOn) { // ACTION: TURN ON FLASH
                 camera.cameraControl.enableTorch(true)
 
@@ -358,6 +342,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
                 // change icon color
                 imgBtnFlash?.setBackgroundResource(R.drawable.ic_flash_on)
+
+                switchModel.contentDescription = "flash on"
 
                 // text to speech
                 util.textToSpeech(Constants.FLASH_ON, ttsId)
@@ -369,6 +355,8 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
                 // change icon color
                 imgBtnFlash?.setBackgroundResource(R.drawable.ic_flash_off)
+
+                switchModel.contentDescription = "flash off"
 
                 // text to speech
                 util.textToSpeech(Constants.FLASH_OFF, ttsId)
@@ -489,11 +477,12 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     private fun detectObjects(image: ImageProxy) {
+
         // Copy out RGB bits to the shared bitmap buffer
         image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
 
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        objectDetectorHelper.detect(bitmapBuffer, modelInUse)
+        objectDetectorHelper.detect(util.rotateBitmap(bitmapBuffer, 90f), modelInUse)
     }
 
     private fun isSpeakResultAllowed(): Boolean{
@@ -584,7 +573,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 image.width
             )
         }
-        Log.d("Hasil prediksi server", results.toString())
 
         if (results != null && results.isNotEmpty() && isSpeakResultAllowed()) {
             // start speak

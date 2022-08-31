@@ -154,8 +154,6 @@ open class ObjectDetectorHelper(
             // if mode 2 in use, predict image from server
             serviceApi.predictOnServer(image, "MobileNet")
 
-            Log.d("hasilzzz", serviceApi.resultModelOnline.toString())
-
             objectDetectorListener?.onResultsModeOnline(
                 serviceApi.resultModelOnline,
                 image

@@ -116,11 +116,11 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
                 val boundingBox = result.box
 
 
-                val left = boundingBox[1] * scaleFactor
-                val top = boundingBox[0] * scaleFactor
+                val left = boundingBox[0] * scaleFactor
+                val top = boundingBox[1] * scaleFactor
 
-                val right = boundingBox[3] * scaleFactor
-                val bottom = boundingBox[2] * scaleFactor
+                val right = boundingBox[2] * scaleFactor
+                val bottom = boundingBox[3] * scaleFactor
 
                 // Draw bounding box around detected objects
                 val drawableRect = RectF(left, top, right, bottom)

@@ -9,7 +9,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.*
-import kotlin.collections.ArrayList
 
 
 class Service {
@@ -39,15 +38,32 @@ class Service {
     }
 
     private fun bitMapToString(bitmap: Bitmap?): String {
-        val baos = ByteArrayOutputStream()
-        bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-        val b = baos.toByteArray()
-        return Base64.encodeToString(b, Base64.DEFAULT)
+        var baos = ByteArrayOutputStream()
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 50, baos)
+        var b = baos.toByteArray()
+
+        var temp: String = ""
+
+        try {
+            System.gc()
+            temp = Base64.encodeToString(b, Base64.DEFAULT)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } catch (e: OutOfMemoryError) {
+            baos = ByteArrayOutputStream()
+            bitmap?.compress(Bitmap.CompressFormat.JPEG, 0, baos)
+            b = baos.toByteArray()
+            temp = Base64.encodeToString(b, Base64.DEFAULT)
+            Log.d("EWN", "Out of memory error catched")
+        }
+        return temp
     }
 
     fun predictOnServer(image: Bitmap, modelName: String) {
         val fileBase64 = bitMapToString(image)
         val body = PredictImageReq(fileBase64, modelName)
+
+        Log.d("hasilonline", "masuk mode online")
 
         RetrofitClient.instance.predictImageServer(body).enqueue(object: Callback<PredictImageResponse> {
             override fun onResponse(
@@ -55,13 +71,13 @@ class Service {
                 response: Response<PredictImageResponse>
             ) {
                 val responseCode = response.code().toString()
-                Log.d(Constants.TAG, "response code$responseCode")
+                Log.d("hasilonline", "response code$responseCode")
 
                 val responseBody = response.body()
-                Log.d("hasilll", responseBody?.data.toString())
+                Log.d("hasilonline", responseBody?.data.toString())
 
                 resultModelOnline = responseBody?.data
-                Log.d("hasilll online", resultModelOnline.toString())
+                Log.d("hasilonline", resultModelOnline.toString())
             }
 
             override fun onFailure(call: Call<PredictImageResponse>, t: Throwable) {

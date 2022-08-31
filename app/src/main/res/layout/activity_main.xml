@@ -61,12 +61,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
+                android:contentDescription="ubah mode"
                 android:padding="10dp"
                 android:scaleX="1.5"
                 android:scaleY="1.5"
                 android:thumb="@drawable/thumb_selector"
-                android:track="@drawable/track_selector"
-                android:contentDescription="ubah mode" />
+                android:track="@drawable/track_selector" />
         </RelativeLayout>
 
     </LinearLayout>
