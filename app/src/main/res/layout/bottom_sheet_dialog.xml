@@ -18,7 +18,7 @@
         android:orientation="vertical"
         android:layout_marginTop="15dp">
         <ImageView
-            android:src="@drawable/ic_help"
+            android:src="@drawable/ic_help_white_bg"
             android:layout_marginBottom="15dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
@@ -71,7 +71,7 @@
             android:layout_weight="1"
             android:src="@drawable/ic_speaker"
             android:background="@drawable/shape_blue_solid"
-            android:contentDescription="suara"/>
+            android:contentDescription="speaker"/>
         <Button
             android:id="@+id/btnClose"
             android:text="Tutup"

@@ -4,10 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue"
+    android:background="@color/darkBlue"
     tools:context=".SplashScreen">
 
-    <!--  TODO: change src file logo  -->
     <ImageView
         android:id="@+id/ivLogo"
         android:layout_width="300dp"

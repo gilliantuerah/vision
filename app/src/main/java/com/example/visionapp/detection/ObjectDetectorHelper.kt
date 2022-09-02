@@ -142,7 +142,7 @@ open class ObjectDetectorHelper(
 //        }
 //    }
 
-    fun detect(image: Bitmap, modelInUse: Int) {
+    fun detect(image: Bitmap, modelInUse: Int, allowDetection: Boolean) {
         if (modelInUse == 0) {
             val results = recognizeImage(image)
 
@@ -151,14 +151,16 @@ open class ObjectDetectorHelper(
                 image
             )
         } else {
-            // use mode 2 -> predict from server
-            // if mode 2 in use, predict image from server
-            serviceApi.predictOnServer(image, Constants.MODEL_ONLINE)
+            if (allowDetection) {
+                // use mode 2 -> predict from server
+                // if mode 2 in use, predict image from server
+                serviceApi.predictOnServer(image, Constants.MODEL_ONLINE)
 
-            objectDetectorListener?.onResultsModeOnline(
-                serviceApi.resultModelOnline,
-                image
-            )
+                objectDetectorListener?.onResultsModeOnline(
+                    serviceApi.resultModelOnline,
+                    image
+                )
+            }
         }
     }
 
@@ -373,7 +375,7 @@ open class ObjectDetectorHelper(
         return nmsList
     }
 
-    fun recognizeImage(image: Bitmap): ArrayList<Recognition>? {
+    private fun recognizeImage(image: Bitmap): ArrayList<Recognition>? {
         convertBitmapToByteBuffer(image)
         val outputMap: MutableMap<Int, Any> = HashMap()
 

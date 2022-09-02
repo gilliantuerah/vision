@@ -482,7 +482,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
 
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        objectDetectorHelper.detect(util.rotateBitmap(bitmapBuffer, 90f), modelInUse)
+        objectDetectorHelper.detect(util.rotateBitmap(bitmapBuffer, 90f), modelInUse, isSpeakResultAllowed())
     }
 
     private fun isSpeakResultAllowed(): Boolean{

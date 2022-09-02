@@ -47,6 +47,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
     private var textPaint = Paint()
 
     private var scaleFactor: Float = 1f
+    private var scaleHeight: Float = 1f
+    private var scaleWidth: Float = 1f
 
     private var bounds = Rect()
 
@@ -115,7 +117,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
                 // TODO: draw bounding box
                 val boundingBox = result.box
 
-
                 val left = boundingBox[0] * scaleFactor
                 val top = boundingBox[1] * scaleFactor
 
@@ -172,7 +173,12 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 
         // PreviewView is in FILL_START mode. So we need to scale up the bounding box to match with
         // the size that the captured images will be displayed.
+        scaleWidth = width * 1f / imageWidth
+        scaleHeight = height * 1f / imageHeight
         scaleFactor = max(width * 1f / imageWidth, height * 1f / imageHeight)
+
+        Log.d("scaleWidth", scaleWidth.toString())
+        Log.d("scaleHeight", scaleHeight.toString())
     }
 
     companion object {
