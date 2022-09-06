@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Build
@@ -17,6 +16,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import android.util.Rational
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
@@ -38,7 +38,9 @@ import com.example.visionapp.env.Constants
 import com.example.visionapp.env.Utility
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.bottom_sheet_dialog.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.launch
 import org.tensorflow.lite.examples.detection.tflite.Classifier
 import java.io.InputStream
 import java.util.*
@@ -107,8 +109,7 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
         objectDetectorHelper = ObjectDetectorHelper(
             context = applicationContext,
             objectDetectorListener = this,
-            labels = labelsYoloV5,
-            inputSize = 640
+            labels = labelsYoloV5
         )
 
         // init util
@@ -440,7 +441,6 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
             imageAnalyzer =
                 ImageAnalysis.Builder()
                     .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-//                    .setTargetRotation(viewFinder?.display.rotation)
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .setOutputImageFormat(OUTPUT_IMAGE_FORMAT_RGBA_8888)
                     .build()
@@ -477,12 +477,13 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
     }
 
     private fun detectObjects(image: ImageProxy) {
-
         // Copy out RGB bits to the shared bitmap buffer
         image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
 
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        objectDetectorHelper.detect(util.rotateBitmap(bitmapBuffer, 90f), modelInUse, isSpeakResultAllowed())
+        if(isSpeakResultAllowed()) {
+            objectDetectorHelper.detect(util.rotateBitmap(bitmapBuffer, 90f), modelInUse)
+        }
     }
 
     private fun isSpeakResultAllowed(): Boolean{
@@ -547,8 +548,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
 
             if (isOnline) {
                 // if device is online, post prediction result to server
-                // TODO: convert image of rectf to pascal voc format
-                serviceApi.postPredictionResult(image, arrayResult)
+                CoroutineScope(Default).launch {
+                    serviceApi.postPredictionResult(image, arrayResult)
+                }
             }
 
             // closing

@@ -84,7 +84,19 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         if(modelInUse == 0) {
             // mode offline
             for (result in resultsOffline) {
-                val drawableRect = result.getLocation()
+
+
+                val boundingBox = result.getLocation()
+
+                val left = boundingBox.left * scaleFactor
+                val top = boundingBox.top * scaleFactor
+
+                val right = boundingBox.right * scaleFactor
+                val bottom = boundingBox.bottom * scaleFactor
+
+                // Draw bounding box around detected objects
+                val drawableRect = RectF(left, top, right, bottom)
+                canvas.drawRect(drawableRect, boxPaint)
 
                 // Draw bounding box around detected objects
                 canvas.drawRect(drawableRect, boxPaint)
@@ -96,9 +108,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
                 textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
                 val textWidth = bounds.width()
                 val textHeight = bounds.height()
-
-                val top = drawableRect.top
-                val left = drawableRect.left
 
                 canvas.drawRect(
                     left,

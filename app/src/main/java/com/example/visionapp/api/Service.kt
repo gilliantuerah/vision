@@ -17,7 +17,6 @@ class Service {
     var resultModelOnline: ArrayList<ResultAnnotation>? = ArrayList()
 
     fun getLastModel() {
-
         // retrofit
         RetrofitClient.instance.getModel(true).enqueue(object: Callback<ModelResponse> {
             override fun onResponse(call: Call<ModelResponse>, response: Response<ModelResponse>) {
@@ -81,6 +80,8 @@ class Service {
             }
 
             override fun onFailure(call: Call<PredictImageResponse>, t: Throwable) {
+                // set result to empty
+                resultModelOnline = ArrayList()
                 Log.e("Failed", t.message.toString())
             }
         })
