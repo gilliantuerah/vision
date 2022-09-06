@@ -31,7 +31,7 @@ import kotlin.math.pow
 
 
 open class ObjectDetectorHelper(
-    private var threshold: Float = 0.2f,
+    private var threshold: Float = 0.3f,
     private var numThreads: Int = 1,
     private var currentDelegate: Int = 0,
     private val inputSize: Int = Constants.INPUT_SIZE,
