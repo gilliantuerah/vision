@@ -1,10 +1,8 @@
 package com.example.visionapp.detection
 
-import android.R.attr.bitmap
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
-import android.util.Base64
 import android.util.Log
 import com.example.visionapp.MainActivity
 import com.example.visionapp.api.Service
@@ -20,7 +18,6 @@ import org.tensorflow.lite.Tensor
 import org.tensorflow.lite.examples.detection.tflite.Classifier.Recognition
 import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.nnapi.NnApiDelegate
-import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -277,6 +274,14 @@ open class ObjectDetectorHelper(
         return bitmap
     }
 
+    private fun sortResult(results: ArrayList<Recognition>): ArrayList<Recognition>{
+        results.sortWith(Comparator { p0, p1 -> // Intentionally reversed to put high confidence at the head of the queue.
+            p0!!.getLocation().top.compareTo(p1!!.getLocation().top)
+        })
+
+        return results
+    }
+
     //non maximum suppression
     private fun nms(list: ArrayList<Recognition>): ArrayList<Recognition>? {
         val nmsList = ArrayList<Recognition>()
@@ -313,7 +318,7 @@ open class ObjectDetectorHelper(
 
         // done detection
         detectionFinish = true
-        return nmsList
+        return sortResult(nmsList)
     }
 
     private fun recognizeImage(image: Bitmap): ArrayList<Recognition>? {
