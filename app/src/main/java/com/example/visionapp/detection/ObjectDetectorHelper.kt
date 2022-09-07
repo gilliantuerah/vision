@@ -389,8 +389,8 @@ open class ObjectDetectorHelper(
                 val rect = RectF(
                     max(0f, xPos - w / 2),
                     max(0f, yPos - h / 2),
-                    min((image.width - 1).toFloat(), xPos + w / 2),
-                    min((image.height - 1).toFloat(), yPos + h / 2)
+                    min((reshapeBitmap.width - 1).toFloat(), xPos + w / 2),
+                    min((reshapeBitmap.height - 1).toFloat(), yPos + h / 2)
                 )
                 detections.add(
                     Recognition(

@@ -177,7 +177,9 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 // device goes offline when using mode online (mode 2)
                 // switch to mode offline (mode 1)
                 if (modelInUse == 1) {
-                    modelName = Constants.MODEL_ONLINE
+                    // change to mode 0
+                    modelInUse = 0
+                    modelName = Constants.MODEL_OFFLINE
                     switchModel.isChecked = false
                 }
             }

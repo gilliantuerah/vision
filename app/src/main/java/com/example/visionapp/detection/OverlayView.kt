@@ -23,15 +23,13 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.visionapp.R
 import com.example.visionapp.api.datatype.ResultAnnotation
+import com.example.visionapp.env.Constants
 import org.tensorflow.lite.examples.detection.tflite.Classifier
-import java.util.LinkedList
 import kotlin.math.max
-import org.tensorflow.lite.task.vision.detector.Detection
 import kotlin.math.min
 
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -82,21 +80,24 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         if(modelInUse == 0) {
             // mode offline
             for (result in resultsOffline) {
+                val vHeight = max(width, height)
+                val vWidth = min(width, height)
 
+                val multiplierX = vWidth / Constants.INPUT_SIZE
+
+                val offsetX = 0
+                val offsetY = (vHeight - Constants.INPUT_SIZE * multiplierX) / 2
 
                 val boundingBox = result.getLocation()
 
-                val left = boundingBox.left * scaleFactor
-                val top = boundingBox.top * scaleFactor
+                val left = boundingBox.left * multiplierX + offsetX
+                val top = boundingBox.top * multiplierX + offsetY
 
-                val right = boundingBox.right * scaleFactor
-                val bottom = boundingBox.bottom * scaleFactor
+                val right = left - boundingBox.right + 2 * boundingBox.right * multiplierX
+                val bottom = top - boundingBox.bottom + 2 * boundingBox.bottom * multiplierX
 
                 // Draw bounding box around detected objects
                 val drawableRect = RectF(left, top, right, bottom)
-                canvas.drawRect(drawableRect, boxPaint)
-
-                // Draw bounding box around detected objects
                 canvas.drawRect(drawableRect, boxPaint)
 
                 // Create text to display alongside detected objects
