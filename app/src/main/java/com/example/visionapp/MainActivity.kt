@@ -15,8 +15,6 @@ import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
-import android.util.Rational
-import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
@@ -197,6 +195,11 @@ class MainActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener 
                 if(utteranceId == ttsFinishedId) {
                     isTTSObjectFinished = true
                 }
+            }
+
+            override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                super.onStop(utteranceId, interrupted)
+                isTTSObjectFinished = true
             }
 
             override fun onError(utteranceId: String?) {}
