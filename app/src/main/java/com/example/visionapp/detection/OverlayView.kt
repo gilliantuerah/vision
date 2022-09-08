@@ -84,9 +84,9 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
                 val vHeight = max(width, height) //640
                 val vWidth = min(width, height) //480
 
-                val multiplierX = vWidth / Constants.INPUT_SIZE //480/640
+                val multiplierX = vWidth / Constants.INPUT_SIZE //480/480
 
-                val offsetX = 160
+                val offsetX = 0
                 val offsetY = (vHeight - Constants.INPUT_SIZE * multiplierX) / 2
 
                 val boundingBox = result.getLocation()
@@ -94,7 +94,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
                 val left = boundingBox.left * multiplierX + offsetX
                 val top = boundingBox.top * multiplierX + offsetY
 
-                val right = 2 * boundingBox.right * multiplierX + offsetX
+                val right = boundingBox.right * multiplierX + offsetX
                 val bottom = 2 * boundingBox.bottom * multiplierX + offsetY
 
                 // Draw bounding box around detected objects

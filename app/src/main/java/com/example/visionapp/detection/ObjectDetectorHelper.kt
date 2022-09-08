@@ -324,7 +324,7 @@ open class ObjectDetectorHelper(
     private fun recognizeImage(image: Bitmap): ArrayList<Recognition>? {
         // start detection
         detectionFinish = false
-        val reshapeBitmap = Bitmap.createScaledBitmap(image, 640, 640, false)
+        val reshapeBitmap = Bitmap.createScaledBitmap(image, getInputSize(), getInputSize(), false)
         convertBitmapToByteBuffer(reshapeBitmap)
 
         val bitmapDariByteBuffer = getBitmap(imgData, reshapeBitmap.width, reshapeBitmap.height)
