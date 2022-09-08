@@ -62,8 +62,6 @@ class Service {
         val fileBase64 = bitMapToString(image)
         val body = PredictImageReq(fileBase64, modelName)
 
-        Log.d("hasilonline", "masuk mode online")
-
         RetrofitClient.instance.predictImageServer(body).enqueue(object: Callback<PredictImageResponse> {
             override fun onResponse(
                 call: Call<PredictImageResponse>,

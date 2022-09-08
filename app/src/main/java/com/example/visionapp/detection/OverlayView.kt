@@ -23,6 +23,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.visionapp.R
@@ -80,12 +81,12 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         if(modelInUse == 0) {
             // mode offline
             for (result in resultsOffline) {
-                val vHeight = max(width, height)
-                val vWidth = min(width, height)
+                val vHeight = max(width, height) //640
+                val vWidth = min(width, height) //480
 
-                val multiplierX = vWidth / Constants.INPUT_SIZE
+                val multiplierX = vWidth / Constants.INPUT_SIZE //480/640
 
-                val offsetX = 0
+                val offsetX = 160
                 val offsetY = (vHeight - Constants.INPUT_SIZE * multiplierX) / 2
 
                 val boundingBox = result.getLocation()
@@ -93,8 +94,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
                 val left = boundingBox.left * multiplierX + offsetX
                 val top = boundingBox.top * multiplierX + offsetY
 
-                val right = left - boundingBox.right + 2 * boundingBox.right * multiplierX
-                val bottom = top - boundingBox.bottom + 2 * boundingBox.bottom * multiplierX
+                val right = 2 * boundingBox.right * multiplierX + offsetX
+                val bottom = 2 * boundingBox.bottom * multiplierX + offsetY
 
                 // Draw bounding box around detected objects
                 val drawableRect = RectF(left, top, right, bottom)
@@ -125,11 +126,15 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
                 // TODO: draw bounding box
                 val boundingBox = result.box
 
+                val offsetY = 200
+
+                Log.d("offset", offsetY.toString())
+
                 val left = boundingBox[0] * scaleFactor
-                val top = boundingBox[1] * scaleFactor
+                val top = boundingBox[1] * scaleFactor + offsetY
 
                 val right = boundingBox[2] * scaleFactor
-                val bottom = boundingBox[3] * scaleFactor
+                val bottom = boundingBox[3] * scaleFactor + offsetY
 
                 // Draw bounding box around detected objects
                 val drawableRect = RectF(left, top, right, bottom)
